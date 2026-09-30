@@ -2,19 +2,75 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Fantasky`s Blog</title>
-    <link>https://blog.fantasky.dpdns.org/posts/</link>
+    <link>http://localhost:1313/posts/</link>
     <description>Recent content in Posts on Fantasky`s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh_cn</language>
-    <lastBuildDate>Wed, 03 Dec 2025 20:58:48 +0800</lastBuildDate><atom:link href="https://blog.fantasky.dpdns.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+    <lastBuildDate>Tue, 29 Sep 2026 11:52:16 +0800</lastBuildDate><atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>嵌入式linux学习01</title>
+      <link>http://localhost:1313/posts/embedded_linux_01/</link>
+      <pubDate>Tue, 29 Sep 2026 11:52:16 +0800</pubDate>
+      
+      
+      
+      <guid>http://localhost:1313/posts/embedded_linux_01/</guid>
+      <description>
+
+
+&lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;1.基本认识
+  &lt;a href=&#34;#1%e5%9f%ba%e6%9c%ac%e8%ae%a4%e8%af%86&#34; class=&#34;header-anchor-link&#34;&gt;
+&lt;svg
+    xmlns=&#34;http://www.w3.org/2000/svg&#34;
+    width=&#34;1rem&#34; height=&#34;1rem&#34; viewBox=&#34;0 0 24 24&#34; fill=&#34;none&#34;
+    stroke=&#34;currentColor&#34; stroke-width=&#34;2&#34; stroke-linecap=&#34;round&#34;
+    stroke-linejoin=&#34;round&#34;&gt;
+    &lt;line x1=&#34;4&#34; y1=&#34;9&#34; x2=&#34;20&#34; y2=&#34;9&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;4&#34; y1=&#34;15&#34; x2=&#34;20&#34; y2=&#34;15&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;10&#34; y1=&#34;3&#34; x2=&#34;8&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;16&#34; y1=&#34;3&#34; x2=&#34;14&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;
+&lt;/svg&gt;
+
+&lt;/a&gt;
+&lt;/h3&gt;
+
+
+
+
+&lt;h4 class=&#34;header-anchor-wrapper&#34;&gt;fd是什么
+  &lt;a href=&#34;#fd%e6%98%af%e4%bb%80%e4%b9%88&#34; class=&#34;header-anchor-link&#34;&gt;
+&lt;svg
+    xmlns=&#34;http://www.w3.org/2000/svg&#34;
+    width=&#34;1rem&#34; height=&#34;1rem&#34; viewBox=&#34;0 0 24 24&#34; fill=&#34;none&#34;
+    stroke=&#34;currentColor&#34; stroke-width=&#34;2&#34; stroke-linecap=&#34;round&#34;
+    stroke-linejoin=&#34;round&#34;&gt;
+    &lt;line x1=&#34;4&#34; y1=&#34;9&#34; x2=&#34;20&#34; y2=&#34;9&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;4&#34; y1=&#34;15&#34; x2=&#34;20&#34; y2=&#34;15&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;10&#34; y1=&#34;3&#34; x2=&#34;8&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;16&#34; y1=&#34;3&#34; x2=&#34;14&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;
+&lt;/svg&gt;
+
+&lt;/a&gt;
+&lt;/h4&gt;
+
+&lt;p&gt;fd 是 &lt;strong&gt;file descriptor&lt;/strong&gt; 文件描述符，其本质是一个整数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; fd &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;open&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/dev/mydev&amp;#34;&lt;/span&gt;, O_RDWR);
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;/*
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;open函数第二个参数打开标志
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;O_RDONLY   // 只读
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;O_WRONLY   // 只写
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;O_RDWR     // 读写
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;*/&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以上代码用于创建一个fd。&lt;/p&gt;</description>
+    </item>
+    
     <item>
       <title>Mini-Redis 学习分析（一）</title>
-      <link>https://blog.fantasky.dpdns.org/posts/mini-redis-learn-1/</link>
+      <link>http://localhost:1313/posts/mini-redis-learn-1/</link>
       <pubDate>Wed, 03 Dec 2025 20:58:48 +0800</pubDate>
       
-      <guid>https://blog.fantasky.dpdns.org/posts/mini-redis-learn-1/</guid>
-      <description>&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;mini-redis-学习分析一&#34; --&gt;
+      
+      
+      <guid>http://localhost:1313/posts/mini-redis-learn-1/</guid>
+      <description>
+
 
 &lt;h1 class=&#34;header-anchor-wrapper&#34;&gt;Mini-Redis 学习分析（一）
   &lt;a href=&#34;#mini-redis-%e5%ad%a6%e4%b9%a0%e5%88%86%e6%9e%90%e4%b8%80&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -29,8 +85,8 @@
 &lt;/a&gt;
 &lt;/h1&gt;
 
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;0x01-服务端启动过程&#34; --&gt;
+
+
 
 &lt;h2 class=&#34;header-anchor-wrapper&#34;&gt;0x01 服务端启动过程
   &lt;a href=&#34;#0x01-%e6%9c%8d%e5%8a%a1%e7%ab%af%e5%90%af%e5%8a%a8%e8%bf%87%e7%a8%8b&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -45,8 +101,8 @@
 &lt;/a&gt;
 &lt;/h2&gt;
 
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;server&#34; --&gt;
+
+
 
 &lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;Server
   &lt;a href=&#34;#server&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -66,13 +122,15 @@
     
     <item>
       <title>Hugo部署到Vercel完整指南</title>
-      <link>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</link>
+      <link>http://localhost:1313/posts/hugo-to-vercel/</link>
       <pubDate>Thu, 25 Sep 2025 21:43:14 +0800</pubDate>
       
-      <guid>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</guid>
+      
+      
+      <guid>http://localhost:1313/posts/hugo-to-vercel/</guid>
       <description>&lt;p&gt;本文将详细介绍如何使用Hugo创建静态网站并部署到Vercel平台，包括完整的安装、配置和部署流程。&lt;/p&gt;
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;-hugo安装与环境配置&#34; --&gt;
+
+
 
 &lt;h2 class=&#34;header-anchor-wrapper&#34;&gt;📦 Hugo安装与环境配置
   &lt;a href=&#34;#-hugo%e5%ae%89%e8%a3%85%e4%b8%8e%e7%8e%af%e5%a2%83%e9%85%8d%e7%bd%ae&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -87,8 +145,8 @@
 &lt;/a&gt;
 &lt;/h2&gt;
 
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;windows环境安装&#34; --&gt;
+
+
 
 &lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;Windows环境安装
   &lt;a href=&#34;#windows%e7%8e%af%e5%a2%83%e5%ae%89%e8%a3%85&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -104,9 +162,9 @@
 &lt;/h3&gt;
 
 &lt;p&gt;使用Windows包管理器安装Hugo Extended版本：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;winget install Hugo.Hugo.Extended
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;验证安装&#34; --&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;winget install Hugo.Hugo.Extended
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
 
 &lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;验证安装
   &lt;a href=&#34;#%e9%aa%8c%e8%af%81%e5%ae%89%e8%a3%85&#34; class=&#34;header-anchor-link&#34;&gt;

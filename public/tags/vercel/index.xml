@@ -2,20 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Vercel on Fantasky`s Blog</title>
-    <link>https://blog.fantasky.dpdns.org/tags/vercel/</link>
+    <link>http://localhost:1313/tags/vercel/</link>
     <description>Recent content in Vercel on Fantasky`s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh_cn</language>
-    <lastBuildDate>Thu, 25 Sep 2025 21:43:14 +0800</lastBuildDate><atom:link href="https://blog.fantasky.dpdns.org/tags/vercel/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+    <lastBuildDate>Thu, 25 Sep 2025 21:43:14 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/vercel/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Hugo部署到Vercel完整指南</title>
-      <link>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</link>
+      <link>http://localhost:1313/posts/hugo-to-vercel/</link>
       <pubDate>Thu, 25 Sep 2025 21:43:14 +0800</pubDate>
       
-      <guid>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</guid>
+      
+      
+      <guid>http://localhost:1313/posts/hugo-to-vercel/</guid>
       <description>&lt;p&gt;本文将详细介绍如何使用Hugo创建静态网站并部署到Vercel平台，包括完整的安装、配置和部署流程。&lt;/p&gt;
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;-hugo安装与环境配置&#34; --&gt;
+
+
 
 &lt;h2 class=&#34;header-anchor-wrapper&#34;&gt;📦 Hugo安装与环境配置
   &lt;a href=&#34;#-hugo%e5%ae%89%e8%a3%85%e4%b8%8e%e7%8e%af%e5%a2%83%e9%85%8d%e7%bd%ae&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -30,8 +35,8 @@
 &lt;/a&gt;
 &lt;/h2&gt;
 
-&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;windows环境安装&#34; --&gt;
+
+
 
 &lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;Windows环境安装
   &lt;a href=&#34;#windows%e7%8e%af%e5%a2%83%e5%ae%89%e8%a3%85&#34; class=&#34;header-anchor-link&#34;&gt;
@@ -47,9 +52,9 @@
 &lt;/h3&gt;
 
 &lt;p&gt;使用Windows包管理器安装Hugo Extended版本：&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;winget install Hugo.Hugo.Extended
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;!-- end-chunk --&gt;
-&lt;!-- begin-chunk data-anchor=&#34;验证安装&#34; --&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;winget install Hugo.Hugo.Extended
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
 
 &lt;h3 class=&#34;header-anchor-wrapper&#34;&gt;验证安装
   &lt;a href=&#34;#%e9%aa%8c%e8%af%81%e5%ae%89%e8%a3%85&#34; class=&#34;header-anchor-link&#34;&gt;

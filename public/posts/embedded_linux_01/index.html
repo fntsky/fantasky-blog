@@ -1,0 +1,812 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang='zh_cn'><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href='http://localhost:1313/favicon.ico' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>嵌入式linux学习01 - Fantasky`s Blog</title>
+
+    
+
+    
+
+    
+        <meta property="og:url" content="http://localhost:1313/posts/embedded_linux_01/">
+	<meta property="og:site_name" content="Fantasky`s Blog">
+	<meta property="og:title" content="嵌入式linux学习01">
+	<meta property="og:description" content="1.基本认识 fd是什么 fd 是 file descriptor 文件描述符，其本质是一个整数。
+int fd = open(&#34;/dev/mydev&#34;, O_RDWR); /* open函数第二个参数打开标志 O_RDONLY // 只读 O_WRONLY // 只写 O_RDWR // 读写 */ 以上代码用于创建一个fd。">
+	<meta property="og:locale" content="zh_cn">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-09-29T11:52:16+08:00">
+		<meta property="article:modified_time" content="2026-09-29T11:52:16+08:00">
+
+    
+
+    
+        
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="嵌入式linux学习01">
+	<meta name="twitter:description" content="1.基本认识 fd是什么 fd 是 file descriptor 文件描述符，其本质是一个整数。
+int fd = open(&#34;/dev/mydev&#34;, O_RDWR); /* open函数第二个参数打开标志 O_RDONLY // 只读 O_WRONLY // 只写 O_RDWR // 读写 */ 以上代码用于创建一个fd。">
+
+    <link rel="stylesheet" href="/style.css" integrity="">
+
+
+
+
+
+    
+    <script>
+        if (!('theme' in localStorage)) {
+            localStorage.theme = 'light';
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    </script>
+<script defer src="/js/theme-switch.js" integrity=""></script>
+
+
+
+    <script defer src="/js/hide-navbar-on-scroll.js" integrity=""></script>
+
+
+
+
+
+    <script defer src="/js/zooming.js" integrity=""></script>
+
+
+
+
+
+
+
+    
+        
+        
+            <script defer src="/js/builtin-copy.js" integrity=""></script>
+        
+    
+
+
+
+    
+    
+    
+    <script defer src="/js/search-zh_cn.js" integrity=""></script>
+
+
+
+
+
+
+    
+</head>
+<body><header>
+    <div id="header_content" class="wide">
+        <div id="header_left">
+            <div id="sidebar_btn">
+                <input type="checkbox" id="sidebar_btn_input" class="hidden" />
+                <label id="sidebar_btn_label" for="sidebar_btn_input">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+</svg>
+
+</label>
+                <label id="sidebar_canvas_overlay_wrapper" for="sidebar_btn_input">
+                    <div id="sidebar_canvas_overlay"></div>
+                </label>
+                <div id="sidebar">
+                    <ul><li>
+                                <a href="/posts/">归档</a></li></ul>
+                </div>
+            </div>
+        
+            <div class="brand">
+                <div>
+                    <a href="/">Fantasky`s Blog</a>
+                </div>
+            </div><nav id="header_navbar" class="pure-menu header-menu">
+    <ul class="pure-menu-list"><li class="header-menu-item pure-menu-item insection">
+                    
+                        <a href="/posts/" class="pure-menu-link">归档</a>
+                    
+                </li></ul>
+</nav>
+</div>
+
+        <div id="header_right">
+            
+
+            <div id="theme_tool">
+                <button id="dark_mode_btn" class="header-menu-btn outline-button" title='Switch to dark mode' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+
+</button>
+                <button id="light_mode_btn" class="header-menu-btn outline-button" title='Switch to light mode' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+</svg>
+
+</button>
+            </div>
+
+            
+                <div id="search_tool">
+                    <button id="search_btn" class="header-menu-btn outline-button" title='Search Posts' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
+
+</button>
+                </div>
+            
+        </div>
+    </div>
+</header><div id="search_menu_wrapper" class="hidden">
+    <div id="search_menu">
+        <div id="search_menu_toolbar">
+            <div id="search_menu_input_wrapper">
+                <input id="search_menu_input" type="text" placeholder='Search Posts'>
+            </div>
+            <div id="search_menu_close_btn">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1.25rem" height="1.25rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+</svg>
+
+</div>
+        </div>
+        <div id="search_menu_results">
+        </div>
+    </div>
+</div>
+<main>
+            <div id="content" class="content-margin">
+                
+    
+    
+        
+<script defer src="/js/toc-tracker.js" integrity=""></script>
+
+<div class="collapsible-menu-wrapper right">
+    <div class="collapsible-menu-type">
+        <span>Table of contents</span>
+    </div>
+    <div class="collapsible-menu">
+        <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#1基本认识">1.基本认识</a></li>
+        <li><a href="#什么是文件">什么是文件?</a></li>
+        <li><a href="#2编写一个字符设备驱动程序">2.编写一个字符设备驱动程序</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+    
+
+
+
+    <div class="content-margin">
+
+
+
+
+<article class="line-numbers">
+    
+    
+
+    
+    
+        
+        
+        
+    
+        
+        
+            
+            
+            
+        
+        <section id="1基本认识">
+
+
+<h3 class="header-anchor-wrapper">1.基本认识
+  <a href="#1%e5%9f%ba%e6%9c%ac%e8%ae%a4%e8%af%86" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="fd是什么">
+
+
+<h4 class="header-anchor-wrapper">fd是什么
+  <a href="#fd%e6%98%af%e4%bb%80%e4%b9%88" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h4>
+
+<p>fd 是 <strong>file descriptor</strong> 文件描述符，其本质是一个整数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(<span style="color:#e6db74">&#34;/dev/mydev&#34;</span>, O_RDWR);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">open函数第二个参数打开标志
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">O_RDONLY   // 只读
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">O_WRONLY   // 只写
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">O_RDWR     // 读写
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>以上代码用于创建一个fd。</p>
+<p>fd是只能作用在进程局部。A进程获取了一个fd = 3。在B进程并不能通过3访问到同样设备。
+有了fd之后可以通过fd访问到对应设备。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">100</span>];
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">ssize_t</span> n <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(fd, buf, <span style="color:#66d9ef">sizeof</span>(buf));
+</span></span></code></pre></div><p>当使用open打开设备的时候。内核会为这次打开建立相应的文件打开对象<strong>struct file *</strong>。进程中的fd table会保存指向该对象的引用。fd table本质是一个数组，fd是对应设备的下标。</p>
+<blockquote>
+<p>Linux 进程启动时，通常约定 fd 0、1、2 分别对应 stdin、stdout、stderr，但它们并不是不可改变的，可以被关闭、重定向或重新分配。</p>
+</blockquote>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="struct-file-">
+
+
+<h4 class="header-anchor-wrapper">struct file ?
+  <a href="#struct-file-" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h4>
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> file {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> path        f_path;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations <span style="color:#f92672">*</span>f_op;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">loff_t</span>             f_pos;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span>       f_flags;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span>              <span style="color:#f92672">*</span>private_data;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><table class="mc-table">
+	<thead>
+			<tr>
+					<th>成员</th>
+					<th>作用</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>f_path</td>
+					<td>指向文件路径</td>
+			</tr>
+			<tr>
+					<td>f_op</td>
+					<td>当前文件支持什么操作</td>
+			</tr>
+			<tr>
+					<td>f_pos</td>
+					<td>读写偏移</td>
+			</tr>
+			<tr>
+					<td>f_flags</td>
+					<td>打开标志</td>
+			</tr>
+			<tr>
+					<td>private_data</td>
+					<td>供驱动保存本次打开对应的私有数据</td>
+			</tr>
+	</tbody>
+</table>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="什么是文件">
+
+
+<h3 class="header-anchor-wrapper">什么是文件?
+  <a href="#%e4%bb%80%e4%b9%88%e6%98%af%e6%96%87%e4%bb%b6" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<p>在 Linux 中有“一切皆文件”的设计哲学。设备驱动可以通过创建设备节点暴露到文件系统中，使用户空间能够像操作文件一样，通过 open、read、write 等接口访问设备。</p>
+<p>一个什么样的文件是字符设备？</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>ls -l /dev/null
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#输出crw-rw-rw- 1,3 root 29 9月  14:37 󰡯 /dev/null</span>
+</span></span></code></pre></div><blockquote>
+<p>/dev/null 是一个非常特殊的字符设备。写入的字符流永远被丢弃。读取字节流永远EOF。</p>
+</blockquote>
+<p>其中第一个c标识着/dev/null这个文件是一个字符设备(<strong>character device</strong>)。</p>
+<p>常见文件类型</p>
+<table class="mc-table">
+	<thead>
+			<tr>
+					<th>首字符</th>
+					<th>类型</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>-</td>
+					<td>普通文件</td>
+			</tr>
+			<tr>
+					<td>d</td>
+					<td>目录</td>
+			</tr>
+			<tr>
+					<td>c</td>
+					<td>字符设备</td>
+			</tr>
+			<tr>
+					<td>b</td>
+					<td>块设备</td>
+			</tr>
+			<tr>
+					<td>l</td>
+					<td>符号链接</td>
+			</tr>
+			<tr>
+					<td>p</td>
+					<td>FIFO/管道</td>
+			</tr>
+			<tr>
+					<td>s</td>
+					<td>socket</td>
+			</tr>
+	</tbody>
+</table>
+<p>目前先讨论字符设备。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="2编写一个字符设备驱动程序">
+
+
+<h3 class="header-anchor-wrapper">2.编写一个字符设备驱动程序
+  <a href="#2%e7%bc%96%e5%86%99%e4%b8%80%e4%b8%aa%e5%ad%97%e7%ac%a6%e8%ae%be%e5%a4%87%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<blockquote>
+<p>目标是编写一个可以加载进内核的驱动模块，注册一个字符设备，并在 /dev 下创建设备节点，使用户空间能够通过文件操作访问它。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//mydev.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;linux/kernel.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">mydev_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;MyDev Loaded!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">mydev_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//标注模块进入和退出时候的函数
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_init</span>(mydev_init);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_exit</span>(mydev_exit);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//以下声明模块信息
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_LICENSE</span>(<span style="color:#e6db74">&#34;GPL&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_AUTHOR</span>(<span style="color:#e6db74">&#34;your_name&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_DESCRIPTION</span>(<span style="color:#e6db74">&#34;My first Linux kernel module&#34;</span>);
+</span></span></code></pre></div><p>然后编写Makefile</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-Makefile" data-lang="Makefile"><span style="display:flex;"><span>obj-m <span style="color:#f92672">+=</span> mydev.o
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>KDIR <span style="color:#f92672">:=</span> /lib/modules/<span style="color:#66d9ef">$(</span>shell uname -r<span style="color:#66d9ef">)</span>/build
+</span></span><span style="display:flex;"><span>PWD <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>shell pwd<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">all</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>MAKE<span style="color:#66d9ef">)</span> -C <span style="color:#66d9ef">$(</span>KDIR<span style="color:#66d9ef">)</span> M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> LLVM<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> modules
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">clean</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">$(</span>MAKE<span style="color:#66d9ef">)</span> -C <span style="color:#66d9ef">$(</span>KDIR<span style="color:#66d9ef">)</span> M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> LLVM<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> clean
+</span></span></code></pre></div><blockquote>
+<p>如果使用GCC LLVM=1可以去掉</p>
+</blockquote>
+<p>$(MAKE) 调用 make，-C $(KDIR) 让 make 切换到当前内核的构建目录，并使用内核的 Kbuild 系统进行模块编译。</p>
+<p>该makefile主要是通过内核自己的编译程序进行编译。</p>
+<p>使用<code>bear -- make</code>可以顺便生成clangd支持的<code>compile_commands.json</code></p>
+<p>成功运行之后可以看到一个<code>mydev.ko</code>。
+使用<code>sudo insmod mydev.ko</code>可以加载进模块里面。
+使用<code>sudo rmmod mydev</code>可以卸载。
+使用<code>sudo dmesg | tail</code> 可以看到属于mydev的输出。</p>
+<p>现在<code>mydev.c</code>只是一个毫无作用的程序。下一步会实现注册设备号。</p>
+<blockquote>
+<p>设备号是一个本质是一个整数。类型在内核中是<code>dev_t</code>。
+设备号有主设备号和次设备号在代码中通过<code>MAJOR(dev_num)</code>和<code>MINOR(dev_num)</code>获取。</p>
+</blockquote>
+<p>在代码中可以通过<code>alloc_chrdev_region</code>来申请一个设备号</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">dev_t</span> dev_num;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">alloc_chrdev_region</span>(<span style="color:#f92672">&amp;</span>dev_num, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;mydev&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/*int alloc_chrdev_region(dev_t *dev,       设备号保存地方
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                        unsigned baseminor, 从哪个次设备号开始
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                        unsigned count,     连续多少个设备号
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                        const char *name);  设备名字
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">返回值0 代表成功
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">返回负的错误码表示失败
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">*/</span>
+</span></span></code></pre></div><p>然后将申请代码添加进入<code>mydev_init</code>中。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">mydev_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;MyDev Loaded!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">alloc_chrdev_region</span>(<span style="color:#f92672">&amp;</span>dev_num, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Failed to allocate char device region</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">mydev_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//在推出函数中取消申请即可
+</span></span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">unregister_chrdev_region</span>(dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>还需要初始化一个字符设备对象<code>struct cdev</code></p>
+<blockquote>
+<p>cdev承载着真正的字符设备，解决访问这个字符设备的时候如何处理。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> cdev my_cdev;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations mydev_fops;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cdev_init</span>(<span style="color:#f92672">&amp;</span>my_cdev, <span style="color:#f92672">&amp;</span>mydev_fops);
+</span></span></code></pre></div><p><code>file_operations</code>最终决定了这个字符设备支持什么操作。</p>
+<p>接下来实现两个简单的读写操作。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span> message[<span style="color:#ae81ff">100</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Hello from mydev!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">ssize_t</span> <span style="color:#a6e22e">mydev_read</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file,    <span style="color:#75715e">//当前打开的文件对象
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>buf,     <span style="color:#75715e">//用户空间缓冲区，用来接收驱动读取的数据
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> count,         <span style="color:#75715e">//用户希望读取的字节数
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">loff_t</span> <span style="color:#f92672">*</span>ppos)         <span style="color:#75715e">//当前文件偏移位置，读取后通常需要更新
+</span></span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(message);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">*</span>ppos <span style="color:#f92672">&gt;=</span> len) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; <span style="color:#75715e">// EOF
+</span></span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (count <span style="color:#f92672">&gt;</span> len <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>ppos) {
+</span></span><span style="display:flex;"><span>        count <span style="color:#f92672">=</span> len <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>ppos;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_to_user</span>(buf, message <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>ppos, count)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>ppos <span style="color:#f92672">+=</span> count;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> count;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">ssize_t</span> <span style="color:#a6e22e">mydev_write</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file,      <span style="color:#75715e">//当前打开的文件对象
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>buf, <span style="color:#75715e">//用户空间缓冲区，保存用户希望写入驱动的数据
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> count,           <span style="color:#75715e">//用户希望写入的字节数
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">loff_t</span> <span style="color:#f92672">*</span>ppos)           <span style="color:#75715e">//当前文件偏移位置，写入后通常需要更新
+</span></span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> kbuf[<span style="color:#ae81ff">100</span>];
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> len;
+</span></span><span style="display:flex;"><span>    len <span style="color:#f92672">=</span> <span style="color:#a6e22e">min</span>(count, <span style="color:#66d9ef">sizeof</span>(kbuf) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_from_user</span>(kbuf, buf, len)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    kbuf[len] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\0&#39;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: write %zu bytes: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, len, kbuf);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> count;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//暂时不实现
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">mydev_open</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: opened</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//暂时不实现
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">mydev_release</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: released</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations mydev_fops <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .owner   <span style="color:#f92672">=</span> THIS_MODULE,
+</span></span><span style="display:flex;"><span>    .open    <span style="color:#f92672">=</span> mydev_open,
+</span></span><span style="display:flex;"><span>    .release <span style="color:#f92672">=</span> mydev_release,
+</span></span><span style="display:flex;"><span>    .write   <span style="color:#f92672">=</span> mydev_write,
+</span></span><span style="display:flex;"><span>    .read    <span style="color:#f92672">=</span> mydev_read,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>接下来就可以实现完整init了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">mydev_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;MyDev Loaded!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">alloc_chrdev_region</span>(<span style="color:#f92672">&amp;</span>dev_num, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Failed to allocate char device region</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cdev_init</span>(<span style="color:#f92672">&amp;</span>my_cdev, <span style="color:#f92672">&amp;</span>mydev_fops);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//将cdev和dev_num关联起来。
+</span></span></span><span style="display:flex;"><span>    ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">cdev_add</span>(<span style="color:#f92672">&amp;</span>my_cdev, dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Failed to add cdev</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">unregister_chrdev_region</span>(dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;Allocated char device region: Major %d, Minor %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, 
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">MAJOR</span>(dev_num), 
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">MINOR</span>(dev_num));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//也要释放
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">mydev_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cdev_del</span>(<span style="color:#f92672">&amp;</span>my_cdev);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">unregister_chrdev_region</span>(dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>重新编译insmod后使用dmesg查看一下</p>
+<pre tabindex="0"><code>[10421.907101] Allocated char device region: Major 507, Minor 0
+</code></pre><p>使用命令创建设备节点<code>sudo mknod /dev/mydev c 507 0</code>。最后两个数字就是主设备号和次设备号。</p>
+<blockquote>
+<p>507 是本次动态分配得到的主设备号，并不是固定值。模块重新加载后可能得到不同的主设备号，因此应以实际输出为准。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>$ cat /dev/mydev
+</span></span><span style="display:flex;"><span>Hello from mydev!
+</span></span><span style="display:flex;"><span>$ echo <span style="color:#e6db74">&#34;hello kernel&#34;</span> | sudo tee /dev/mydev  
+</span></span><span style="display:flex;"><span>$ sudo dmesg | tail
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>10665.545782<span style="color:#f92672">]</span> mydev: write <span style="color:#ae81ff">13</span> bytes: hello kernel
+</span></span></code></pre></div><p>至此成功完成了一个内核模块，可以注册一个设备进行简单的读写操作。</p>
+<p>finally</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;linux/kernel.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span><span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/init.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/fs.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/cdev.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/uaccess.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">dev_t</span> dev_num;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> cdev my_cdev;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">char</span> message[<span style="color:#ae81ff">100</span>] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Hello from mydev!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">ssize_t</span> <span style="color:#a6e22e">mydev_read</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>buf, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> count, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">loff_t</span> <span style="color:#f92672">*</span>ppos)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">strlen</span>(message);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">*</span>ppos <span style="color:#f92672">&gt;=</span> len) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>; <span style="color:#75715e">// EOF
+</span></span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (count <span style="color:#f92672">&gt;</span> len <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>ppos) {
+</span></span><span style="display:flex;"><span>        count <span style="color:#f92672">=</span> len <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>ppos;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_to_user</span>(buf, message <span style="color:#f92672">+</span> <span style="color:#f92672">*</span>ppos, count)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>ppos <span style="color:#f92672">+=</span> count;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> count;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">ssize_t</span> <span style="color:#a6e22e">mydev_write</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> __user <span style="color:#f92672">*</span>buf, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> count, 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">loff_t</span> <span style="color:#f92672">*</span>ppos)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> kbuf[<span style="color:#ae81ff">100</span>];
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">size_t</span> len;
+</span></span><span style="display:flex;"><span>    len <span style="color:#f92672">=</span> <span style="color:#a6e22e">min</span>(count, <span style="color:#66d9ef">sizeof</span>(kbuf) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_from_user</span>(kbuf, buf, len)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    kbuf[len] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\0&#39;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: write %zu bytes: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, len, kbuf);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> count;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">mydev_open</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: opened</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">mydev_release</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: released</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations mydev_fops <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    .owner   <span style="color:#f92672">=</span> THIS_MODULE,
+</span></span><span style="display:flex;"><span>    .open    <span style="color:#f92672">=</span> mydev_open,
+</span></span><span style="display:flex;"><span>    .release <span style="color:#f92672">=</span> mydev_release,
+</span></span><span style="display:flex;"><span>    .write   <span style="color:#f92672">=</span> mydev_write,
+</span></span><span style="display:flex;"><span>    .read    <span style="color:#f92672">=</span> mydev_read,
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> __init <span style="color:#a6e22e">mydev_init</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;MyDev Loaded!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">alloc_chrdev_region</span>(<span style="color:#f92672">&amp;</span>dev_num, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#34;mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Failed to allocate char device region</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cdev_init</span>(<span style="color:#f92672">&amp;</span>my_cdev, <span style="color:#f92672">&amp;</span>mydev_fops);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">cdev_add</span>(<span style="color:#f92672">&amp;</span>my_cdev, dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_err</span>(<span style="color:#e6db74">&#34;Failed to add cdev</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">unregister_chrdev_region</span>(dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;Allocated char device region: Major %d, Minor %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, 
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">MAJOR</span>(dev_num), 
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">MINOR</span>(dev_num));
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> __exit <span style="color:#a6e22e">mydev_exit</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cdev_del</span>(<span style="color:#f92672">&amp;</span>my_cdev);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">unregister_chrdev_region</span>(dev_num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: unloaded</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_init</span>(mydev_init);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">module_exit</span>(mydev_exit);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_LICENSE</span>(<span style="color:#e6db74">&#34;GPL&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_AUTHOR</span>(<span style="color:#e6db74">&#34;yourname&#34;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">MODULE_DESCRIPTION</span>(<span style="color:#e6db74">&#34;My first Linux kernel module&#34;</span>);
+</span></span></code></pre></div></section>
+    
+</article>
+</div>
+
+
+                
+                    
+                
+
+                
+            </div>
+        </main>
+</body>
+</html>

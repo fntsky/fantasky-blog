@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Protobuf on Fantasky`s Blog</title>
+    <link>http://localhost:1313/tags/protobuf/</link>
+    <description>Recent content in Protobuf on Fantasky`s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh_cn</language>
+    <lastBuildDate>Mon, 10 Aug 2026 15:26:00 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/protobuf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>gRPC 与 Protobuf：像调本地函数一样调远程服务</title>
+      <link>http://localhost:1313/posts/go-grpc-protobuf/</link>
+      <pubDate>Mon, 10 Aug 2026 15:26:00 +0800</pubDate>
+      
+      <guid>http://localhost:1313/posts/go-grpc-protobuf/</guid>
+      <description>&lt;!-- end-chunk --&gt;
+&lt;!-- begin-chunk data-anchor=&#34;grpc-与-protobuf像调本地函数一样调远程服务&#34; --&gt;
+
+&lt;h1 class=&#34;header-anchor-wrapper&#34;&gt;gRPC 与 Protobuf：像调本地函数一样调远程服务
+  &lt;a href=&#34;#grpc-%e4%b8%8e-protobuf%e5%83%8f%e8%b0%83%e6%9c%ac%e5%9c%b0%e5%87%bd%e6%95%b0%e4%b8%80%e6%a0%b7%e8%b0%83%e8%bf%9c%e7%a8%8b%e6%9c%8d%e5%8a%a1&#34; class=&#34;header-anchor-link&#34;&gt;
+&lt;svg
+    xmlns=&#34;http://www.w3.org/2000/svg&#34;
+    width=&#34;1rem&#34; height=&#34;1rem&#34; viewBox=&#34;0 0 24 24&#34; fill=&#34;none&#34;
+    stroke=&#34;currentColor&#34; stroke-width=&#34;2&#34; stroke-linecap=&#34;round&#34;
+    stroke-linejoin=&#34;round&#34;&gt;
+    &lt;line x1=&#34;4&#34; y1=&#34;9&#34; x2=&#34;20&#34; y2=&#34;9&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;4&#34; y1=&#34;15&#34; x2=&#34;20&#34; y2=&#34;15&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;10&#34; y1=&#34;3&#34; x2=&#34;8&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;16&#34; y1=&#34;3&#34; x2=&#34;14&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;
+&lt;/svg&gt;
+
+&lt;/a&gt;
+&lt;/h1&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;这是 Go 并发系列（&lt;a href=&#34;http://localhost:1313/posts/go-goroutine-channel-interface-select/&#34;&gt;《Go 并发四件套》&lt;/a&gt;）的配套篇，也是 etcd 学习链路 L0 的前置知识。
+为什么必须懂它？&lt;strong&gt;etcd 对外暴露的 API 全部是 gRPC&lt;/strong&gt;——&lt;code&gt;api/etcdserverpb/rpc.proto&lt;/code&gt; 一份文件定义六大服务，
+客户端（etcdctl、Kubernetes）通过自动生成的 stub 调用，就像调用本地函数一样。
+这篇博客带你亲手走一遍：&lt;strong&gt;写 .proto → 生成代码 → 跑起服务 → 客户端调用&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;!-- end-chunk --&gt;
+&lt;!-- begin-chunk data-anchor=&#34;0-先建立一个心智模型&#34; --&gt;
+
+&lt;h2 class=&#34;header-anchor-wrapper&#34;&gt;0. 先建立一个心智模型
+  &lt;a href=&#34;#0-%e5%85%88%e5%bb%ba%e7%ab%8b%e4%b8%80%e4%b8%aa%e5%bf%83%e6%99%ba%e6%a8%a1%e5%9e%8b&#34; class=&#34;header-anchor-link&#34;&gt;
+&lt;svg
+    xmlns=&#34;http://www.w3.org/2000/svg&#34;
+    width=&#34;1rem&#34; height=&#34;1rem&#34; viewBox=&#34;0 0 24 24&#34; fill=&#34;none&#34;
+    stroke=&#34;currentColor&#34; stroke-width=&#34;2&#34; stroke-linecap=&#34;round&#34;
+    stroke-linejoin=&#34;round&#34;&gt;
+    &lt;line x1=&#34;4&#34; y1=&#34;9&#34; x2=&#34;20&#34; y2=&#34;9&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;4&#34; y1=&#34;15&#34; x2=&#34;20&#34; y2=&#34;15&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;10&#34; y1=&#34;3&#34; x2=&#34;8&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;&lt;line x1=&#34;16&#34; y1=&#34;3&#34; x2=&#34;14&#34; y2=&#34;21&#34;&gt;&lt;/line&gt;
+&lt;/svg&gt;
+
+&lt;/a&gt;
+&lt;/h2&gt;
+
+&lt;p&gt;三个角色，一句话：&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

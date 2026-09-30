@@ -6,6 +6,7 @@
   var lastScrollY = window.scrollY;
   var isScrollHide = false;
   var isInDropdownMenu = false;
+  var isMouseNearTop = true;
   var headerHeight = header !== void 0 ? header.offsetHeight : 0;
   function updateNavbarVisibility() {
     if (isMouseNearTop || !isScrollHide || isInDropdownMenu) {
