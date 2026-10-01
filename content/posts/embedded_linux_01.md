@@ -1,7 +1,7 @@
 +++
 date = '2026-09-29T11:52:16+08:00'
 draft = false
-title = '嵌入式linux学习01'
+title = '嵌入式Linux学习01'
 +++
 ## 嵌入式linux学习01
 

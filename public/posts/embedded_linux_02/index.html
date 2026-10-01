@@ -1,0 +1,956 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang='zh-CN'><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href='http://localhost:1313/favicon.ico' type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>嵌入式linux学习02 - Fantasky`s Blog</title>
+
+    
+
+    
+
+    
+        <meta property="og:url" content="http://localhost:1313/posts/embedded_linux_02/">
+	<meta property="og:site_name" content="Fantasky`s Blog">
+	<meta property="og:title" content="嵌入式linux学习02">
+	<meta property="og:description" content="嵌入式Linux学习02 ioctl 1.1 为什么需要ioctl 假设我们的字符设备可能是一个简单的显示数字的装置。 此时我们需要设定和读取上面的数字。">
+	<meta property="og:locale" content="zh_CN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="posts">
+		<meta property="article:published_time" content="2026-10-01T15:33:56+08:00">
+		<meta property="article:modified_time" content="2026-10-01T15:33:56+08:00">
+
+    
+
+    
+        
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="嵌入式linux学习02">
+	<meta name="twitter:description" content="嵌入式Linux学习02 ioctl 1.1 为什么需要ioctl 假设我们的字符设备可能是一个简单的显示数字的装置。 此时我们需要设定和读取上面的数字。">
+
+    <link rel="stylesheet" href="/style.css" integrity="">
+
+
+
+
+
+    
+    <script>
+        if (!('theme' in localStorage)) {
+            localStorage.theme = 'light';
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+            document.documentElement.setAttribute("data-theme", "light");
+        }
+    </script>
+<script defer src="/js/theme-switch.js" integrity=""></script>
+
+
+
+    <script defer src="/js/hide-navbar-on-scroll.js" integrity=""></script>
+
+
+
+
+
+    <script defer src="/js/zooming.js" integrity=""></script>
+
+
+
+
+
+
+
+    
+        
+        
+            <script defer src="/js/builtin-copy.js" integrity=""></script>
+        
+    
+
+
+
+    
+    
+    
+    <script defer src="/js/search-zh-CN.js" integrity=""></script>
+
+
+
+
+
+
+    
+</head>
+<body><header>
+    <div id="header_content" class="wide">
+        <div id="header_left">
+            <div id="sidebar_btn">
+                <input type="checkbox" id="sidebar_btn_input" class="hidden" />
+                <label id="sidebar_btn_label" for="sidebar_btn_input">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+</svg>
+
+</label>
+                <label id="sidebar_canvas_overlay_wrapper" for="sidebar_btn_input">
+                    <div id="sidebar_canvas_overlay"></div>
+                </label>
+                <div id="sidebar">
+                    <ul><li>
+                                <a href="/posts/">归档</a></li></ul>
+                </div>
+            </div>
+        
+            <div class="brand">
+                <div>
+                    <a href="/">Fantasky`s Blog</a>
+                </div>
+            </div><nav id="header_navbar" class="pure-menu header-menu">
+    <ul class="pure-menu-list"><li class="header-menu-item pure-menu-item insection">
+                    
+                        <a href="/posts/" class="pure-menu-link">归档</a>
+                    
+                </li></ul>
+</nav>
+</div>
+
+        <div id="header_right">
+            
+
+            <div id="theme_tool">
+                <button id="dark_mode_btn" class="header-menu-btn outline-button" title='Switch to dark mode' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+
+</button>
+                <button id="light_mode_btn" class="header-menu-btn outline-button" title='Switch to light mode' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+</svg>
+
+</button>
+            </div>
+
+            
+                <div id="search_tool">
+                    <button id="search_btn" class="header-menu-btn outline-button" title='Search Posts' type="button">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
+
+</button>
+                </div>
+            
+        </div>
+    </div>
+</header><div id="search_menu_wrapper" class="hidden">
+    <div id="search_menu">
+        <div id="search_menu_toolbar">
+            <div id="search_menu_input_wrapper">
+                <input id="search_menu_input" type="text" placeholder='Search Posts'>
+            </div>
+            <div id="search_menu_close_btn">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1.25rem" height="1.25rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+</svg>
+
+</div>
+        </div>
+        <div id="search_menu_results">
+        </div>
+    </div>
+</div>
+<main>
+            <div id="content" class="content-margin">
+                
+    
+    
+        
+<script defer src="/js/toc-tracker.js" integrity=""></script>
+
+<div class="collapsible-menu-wrapper right">
+    <div class="collapsible-menu-type">
+        <span>Table of contents</span>
+    </div>
+    <div class="collapsible-menu">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#ioctl">ioctl</a>
+      <ul>
+        <li><a href="#11-为什么需要ioctl">1.1 为什么需要ioctl</a></li>
+        <li><a href="#12-ioctl如何运作">1.2 ioctl如何运作</a></li>
+        <li><a href="#13-用户态如何使用ioctl">1.3 用户态如何使用ioctl</a></li>
+      </ul>
+    </li>
+    <li><a href="#blocking-io">blocking-io</a>
+      <ul>
+        <li><a href="#21-blocking-io">2.1 blocking-io</a></li>
+        <li><a href="#22-如何实现">2.2 如何实现</a></li>
+        <li><a href="#23-wait_queue">2.3 wait_queue</a></li>
+        <li><a href="#24-wake_up_interruptible和wait_event_interruptible">2.4 <code>wake_up_interruptible</code>和<code>wait_event_interruptible</code></a></li>
+        <li><a href="#25-poll-and-epoll">2.5 poll and epoll</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+    
+
+
+
+    <div class="content-margin">
+
+
+
+
+<article class="line-numbers">
+    
+    
+
+    
+    
+        
+        
+        
+    
+        
+        
+            
+            
+            
+        
+        <section id="嵌入式linux学习02">
+
+
+<h1 class="header-anchor-wrapper">嵌入式Linux学习02
+  <a href="#%e5%b5%8c%e5%85%a5%e5%bc%8flinux%e5%ad%a6%e4%b9%a002" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h1>
+
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="ioctl">
+
+
+<h2 class="header-anchor-wrapper">ioctl
+  <a href="#ioctl" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h2>
+
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="11-为什么需要ioctl">
+
+
+<h3 class="header-anchor-wrapper">1.1 为什么需要ioctl
+  <a href="#11-%e4%b8%ba%e4%bb%80%e4%b9%88%e9%9c%80%e8%a6%81ioctl" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<p>假设我们的字符设备可能是一个简单的显示数字的装置。 此时我们需要设定和读取上面的数字。</p>
+<p>固然我们可以通过write来进行数据的传递比如传递一个字符串<code>SET_DISPLAY 007</code>，然后在write里面进行解析。然而读取数字的时候则可能需要发送<code>GET_DISPLAY</code>，然后再调用<code>read</code>去读取设备传回来的数字。</p>
+<p>这样的操作虽然可行，但会带来一个问题<code>write</code>和<code>read</code>原本更适合承担连续的数据传输，而像“设置数字”“读取数字”这些操作本质更接近控制命令。如果所有的控制操作都通过字符串协议塞进<code>write/read</code>中，不仅需要进行额外的命令解析，还需要自定义请求和响应流程，接口也会变得越来越复杂。</p>
+<p>因此，Linux提供了一个<code>ioctl</code>作为专门的设备控制接口。通过<code>ioctl</code>，用户态程序可以直接向驱动发送明确的控制命令，并根据需要附带参数和返回值。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="12-ioctl如何运作">
+
+
+<h3 class="header-anchor-wrapper">1.2 ioctl如何运作
+  <a href="#12-ioctl%e5%a6%82%e4%bd%95%e8%bf%90%e4%bd%9c" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">mydev_ioctl</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> cmd,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> arg)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">switch</span> (cmd){
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//....
+</span></span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations mydev_fops <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">//...
+</span></span></span><span style="display:flex;"><span>    .unlocked_ioctl <span style="color:#f92672">=</span> mydev_ioctl,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>这样我们可以通过用类似<code>#define SET_DISPLAY 0x12345</code>之类的方式去定义不同数字代表着什么命令然后在switch里面匹配到对应的分支，但是Linux给了一套关于cmd如何定义的规范提供了四个宏。</p>
+<table class="mc-table">
+	<thead>
+			<tr>
+					<th>名称</th>
+					<th>用法</th>
+					<th>作用</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td><code>_IO</code></td>
+					<td><code>#define MYDEV_RESET _IO(MYDEV_MAGIC, 0)</code></td>
+					<td>不携带额外数据，只发送一个控制命令，例如复位、启动、停止</td>
+			</tr>
+			<tr>
+					<td><code>_IOW</code></td>
+					<td><code>#define MYDEV_SET_VALUE _IOW(MYDEV_MAGIC, 1, int)</code></td>
+					<td><code>int</code> 数据从用户态流向内核，<code>W</code> 表示用户向设备“写”数据，通常配合 <code>copy_from_user()</code></td>
+			</tr>
+			<tr>
+					<td><code>_IOR</code></td>
+					<td><code>#define MYDEV_GET_VALUE _IOR(MYDEV_MAGIC, 2, int)</code></td>
+					<td><code>int</code> 数据从内核流向用户态，<code>R</code> 表示用户从设备“读”数据，通常配合 <code>copy_to_user()</code></td>
+			</tr>
+			<tr>
+					<td><code>_IOWR</code></td>
+					<td><code>#define MYDEV_EXCHANGE _IOWR(MYDEV_MAGIC, 3, struct my_data)</code></td>
+					<td>数据双向流动，用户先传入数据，内核处理后再将结果写回用户态，通常同时使用 <code>copy_from_user()</code> 和 <code>copy_to_user()</code></td>
+			</tr>
+	</tbody>
+</table>
+<blockquote>
+<p><code>W</code> 和 <code>R</code> 的方向是站在用户态程序的角度定义的。<br>
+<code>_IOW</code>、<code>_IOR</code>、<code>_IOWR</code> 这些宏本身只负责生成 ioctl 命令编号，并不会自动完成数据拷贝。真正的数据传输仍需要使用 <code>copy_from_user()</code> 和 <code>copy_to_user()</code>。</p>
+</blockquote>
+<p>这些宏是如何生成出数字的呢。</p>
+<p>在LINUX与内核侧相关的头文件中他们是这样定义的。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define _IO(type,nr)			    _IOC(_IOC_NONE,(type),(nr),0)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define _IOR(type,nr,argtype)		_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(argtype)))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define _IOW(type,nr,argtype)		_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(argtype)))
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define _IOWR(type,nr,argtype)		_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(argtype)))
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define _IOC(dir,type,nr,size) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	(((dir)  &lt;&lt; _IOC_DIRSHIFT) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 ((type) &lt;&lt; _IOC_TYPESHIFT) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 ((nr)   &lt;&lt; _IOC_NRSHIFT) | \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	 ((size) &lt;&lt; _IOC_SIZESHIFT))
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//检查类型是否合法并最终返回需要传输的类型大小
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define _IOC_TYPECHECK(t) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	((sizeof(t) == sizeof(t[1]) &amp;&amp; \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	  sizeof(t) &lt; (1 &lt;&lt; _IOC_SIZEBITS)) ? \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	  sizeof(t) : __invalid_size_argument_for_IOC)
+</span></span></span></code></pre></div><p>通过<code>_IOC</code>的位偏移可以看出这些宏的作用是把<code>unsigned int</code>分开几段分别编码了数据流向，类型，编号，和数据大小四类信息。</p>
+<p>信息如何传递。最终还是通过<code>copy_from_user</code>和<code>copy_to_user</code>。
+例如可以</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">//...
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">case</span> MYDEV_SET_VALUE:
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_from_user</span>(<span style="color:#f92672">&amp;</span>mydev_value, (<span style="color:#66d9ef">int</span> __user <span style="color:#f92672">*</span>)arg, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>))) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: ioctl SET_VALUE %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mydev_value);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//...
+</span></span></span></code></pre></div><p>其中<code>arg</code>是需要写入的<code>int</code>类型在用户空间中的地址通过调用ioctl的时候传入变成了<code>unsigned long</code>。此时需要用<code>(int __user *)</code>将arg转回成用户控件中的地址。</p>
+<blockquote>
+<p>tips:具体行为还是通过代码来约定并不总是指针。</p>
+</blockquote>
+<blockquote>
+<p>读取示例</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">case</span> MYDEV_GET_VALUE:
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copy_to_user</span>((<span style="color:#66d9ef">int</span> __user <span style="color:#f92672">*</span>)arg, <span style="color:#f92672">&amp;</span>mydev_value, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>))) {
+</span></span><span style="display:flex;"><span>           <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>EFAULT;
+</span></span><span style="display:flex;"><span>       }
+</span></span><span style="display:flex;"><span>       <span style="color:#a6e22e">pr_info</span>(<span style="color:#e6db74">&#34;mydev: ioctl GET_VALUE %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, mydev_value);
+</span></span><span style="display:flex;"><span>   }
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">break</span>;
+</span></span></code></pre></div></blockquote>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="13-用户态如何使用ioctl">
+
+
+<h3 class="header-anchor-wrapper">1.3 用户态如何使用ioctl
+  <a href="#13-%e7%94%a8%e6%88%b7%e6%80%81%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8ioctl" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<p>将以上代码编译<code>insmod</code>之后自然想开始进行控制。</p>
+<p>很简单通过<code>open</code>取得fd之后。再通过</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">ioctl</span>(fd, cmd, arg);
+</span></span></code></pre></div><p>其中在内核使用<code>_IO</code>等一系列宏生产的cmd需要同样的在用户程序中写好。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="blocking-io">
+
+
+<h2 class="header-anchor-wrapper">blocking-io
+  <a href="#blocking-io" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h2>
+
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="21-blocking-io">
+
+
+<h3 class="header-anchor-wrapper">2.1 blocking-io
+  <a href="#21-blocking-io" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<p>在使用 <code>read</code> 读取设备数据时，设备并不一定始终处于可读状态，有时需要等待硬件或驱动完成数据准备。</p>
+<p>如果用户程序不断通过 while 循环轮询设备状态，就会造成 CPU 持续空转，浪费大量计算资源。因此，更合理的方式是在暂时没有数据可读时让当前线程进入休眠状态；当设备数据准备完成后，再由内核将等待中的线程唤醒并继续执行读取操作。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="22-如何实现">
+
+
+<h3 class="header-anchor-wrapper">2.2 如何实现
+  <a href="#22-%e5%a6%82%e4%bd%95%e5%ae%9e%e7%8e%b0" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">DECLARE_WAIT_QUEUE_HEAD</span>(mydev_wait);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> data_ready <span style="color:#f92672">=</span> false;
+</span></span></code></pre></div><p>在写入完成数据后可以用</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>data_ready <span style="color:#f92672">=</span> true;
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">wake_up_interruptible</span>(<span style="color:#f92672">&amp;</span>mydev_wait);
+</span></span></code></pre></div><p>读取数据时</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>data_ready){
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ret <span style="color:#f92672">=</span> <span style="color:#a6e22e">wait_event_interruptible</span>(mydev_wait, data_ready);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (ret <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span> ){
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> ret; 
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>等待完成</p>
+<p>假设<code>read/write</code>都操作同一个<code>static char messgae[100]</code>。使用<code>cat /dev/mydev</code>的时候会等待调用write之后才会有输出。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="23-wait_queue">
+
+
+<h3 class="header-anchor-wrapper">2.3 wait_queue
+  <a href="#23-wait_queue" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<p>在上面代码中使用了一个宏来定义了一个wait_queue<code>mydev_wait</code>。
+这其中发生了什么?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define DECLARE_WAIT_QUEUE_HEAD(name) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define __WAIT_QUEUE_HEAD_INITIALIZER(name) {				\
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),			\
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">	.head		= LIST_HEAD_INIT(name.head) }
+</span></span></span></code></pre></div><p>mydev_wait数据结构大致为</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> wait_queue_head {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">spinlock_t</span> lock;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> list_head head;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> list_head {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> list_head <span style="color:#f92672">*</span>next;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> list_head <span style="color:#f92672">*</span>prev;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><blockquote>
+<p><code>spinlock_t lock;</code>作用暂时理解为不能并发访问修改wait_queue。</p>
+</blockquote>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="24-wake_up_interruptible和wait_event_interruptible">
+
+
+<h3 class="header-anchor-wrapper">2.4 <code>wake_up_interruptible</code>和<code>wait_event_interruptible</code>
+  <a href="#24-wake_up_interruptible%e5%92%8cwait_event_interruptible" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define wait_event_interruptible(wq_head, condition)	
+</span></span></span></code></pre></div><p><code>wait_event_interruptibe</code>会condition为flase的时候，为当前任务创建一个等待节点加入<code>wq_head</code>对应的wait_queue当中。同时将当前任务设置为<code>TASK_INTERRUPTIBLE</code>状态并进入睡眠。任务被唤醒后会再次检查<code>condition</code>只有为ture时候才会继续执行。</p>
+<p>而<code>wake_up_interruptible</code>会在wait_queue中遍历等待节点，并尝试唤醒处于<code>TASK_INTERRUPTIBLE</code>状态的任务并唤醒。</p>
+<blockquote>
+<p>实际还有更复杂的机制。</p>
+</blockquote>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="25-poll-and-epoll">
+
+
+<h3 class="header-anchor-wrapper">2.5 poll and epoll
+  <a href="#25-poll-and-epoll" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h3>
+
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="251-在内核中支持poll">
+
+
+<h4 class="header-anchor-wrapper">2.5.1 在内核中支持poll
+  <a href="#251-%e5%9c%a8%e5%86%85%e6%a0%b8%e4%b8%ad%e6%94%af%e6%8c%81poll" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h4>
+
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> __poll_t <span style="color:#a6e22e">mydev_poll</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>file, <span style="color:#66d9ef">struct</span> poll_table_struct <span style="color:#f92672">*</span>wait)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    __poll_t mask <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">poll_wait</span>(file, <span style="color:#f92672">&amp;</span>mydev_wait, wait);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (data_ready) {
+</span></span><span style="display:flex;"><span>        mask <span style="color:#f92672">|=</span> POLLIN <span style="color:#f92672">|</span> POLLRDNORM; <span style="color:#75715e">// Data is available to read
+</span></span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> mask;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> file_operations mydev_fops <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span><span style="color:#75715e">//....
+</span></span></span><span style="display:flex;"><span>    .poll    <span style="color:#f92672">=</span> mydev_poll,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>这是什么?</p>
+<p>在用户态程序中假设有</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(fd1, buf1, <span style="color:#66d9ef">sizeof</span>(buf1)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(fd2, buf2, <span style="color:#66d9ef">sizeof</span>(buf2)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">read</span>(fd3, buf3, <span style="color:#66d9ef">sizeof</span>(buf3)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span></code></pre></div><p>在<code>read</code>fd1的时候陷入阻塞的话程序没法执行后续的操作，但是后续的<code>read</code>并不依赖第一次<code>read</code>的结果。可以希望哪一个已经处于可以read的状态就去read，因此<code>poll</code>出现了。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="252-mydev_poll干了什么">
+
+
+<h4 class="header-anchor-wrapper">2.5.2 mydev_poll干了什么?
+  <a href="#252-mydev_poll%e5%b9%b2%e4%ba%86%e4%bb%80%e4%b9%88" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h4>
+
+<p>在<code>poll_wait</code>中会在mydev_wait增加一个节点，当这个节点被唤醒的时候会发送一个通知回到<code>struct poll_table_struct *wait)</code>。</p>
+<p>然后如果数据准备好了<code>data_ready == true</code>。那么就会返回<code>mask |= POLLIN | POLLRDNORM;</code>。这两个位信息,<code>POLLIN</code>代表有数据可以读取，<code>POLLRDNORM</code>代表有普通数据可以读取。</p>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="253-用户态怎么使用">
+
+
+<h4 class="header-anchor-wrapper">2.5.3 用户态怎么使用
+  <a href="#253-%e7%94%a8%e6%88%b7%e6%80%81%e6%80%8e%e4%b9%88%e4%bd%bf%e7%94%a8" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h4>
+
+<p>可以通过</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(<span style="color:#e6db74">&#34;/dev/mydev&#34;</span>, O_RDWR);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (fd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;Failed to open /dev/mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> pollfd fds[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>    fds[<span style="color:#ae81ff">0</span>].fd <span style="color:#f92672">=</span> fd;
+</span></span><span style="display:flex;"><span>    fds[<span style="color:#ae81ff">0</span>].events <span style="color:#f92672">=</span> POLLIN;
+</span></span><span style="display:flex;"><span>    fds[<span style="color:#ae81ff">1</span>].fd <span style="color:#f92672">=</span> STDIN_FILENO;
+</span></span><span style="display:flex;"><span>    fds[<span style="color:#ae81ff">1</span>].events <span style="color:#f92672">=</span> POLLIN;
+</span></span></code></pre></div><p>创建一个简单的poll。其中0位置上监听<code>mydev</code>，1位置上监听标准输入。<code>events = POLLIN</code>代表唤醒条件是要处于<code>POLLIN</code>。</p>
+<p>当运行<code>poll(fds, 2, -1);</code>的时候</p>
+<blockquote>
+<p>int poll(struct pollfd *fds, nfds_t nfds, int timeout);</p>
+<p>分别对应pollfd和pollfd有效fd数量以及超时时间单位ms。</p>
+<p>-1代表无限等待0代表不等待。</p>
+</blockquote>
+<p>会遍历数组中每一个<code>fd</code>。并且找到对应的<code>file</code>调用<code>poll</code>函数。</p>
+<p>如果全部fd都返回0那么则陷入休眠，直到的对应的<code>fd</code>有数据唤醒poll。然后会再次遍历数组中的<code>fd</code>，检查是否返回所需要的<code>mask</code>。</p>
+<p>如果成功返回则继续执行。所以可以写出如下代码。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>){
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">poll</span>(fds, <span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;i<span style="color:#f92672">&lt;</span><span style="color:#ae81ff">2</span>;i<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span>( fds[i].revents <span style="color:#f92672">&amp;</span> POLLIN){
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">100</span>];
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">ssize_t</span> n <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(fds[i].fd, buf, <span style="color:#66d9ef">sizeof</span>(buf)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span>(n<span style="color:#f92672">&gt;</span><span style="color:#ae81ff">0</span>){
+</span></span><span style="display:flex;"><span>                    buf[n] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\0&#39;</span>;
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Read from fd %d: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, fds[i].fd, buf);
+</span></span><span style="display:flex;"><span>                }<span style="color:#66d9ef">else</span>{
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Read error on fd %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, fds[i].fd);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>可以用<code>tee</code>向/dev/mydev输入内容。而标准输入则是在当前程序运行框加入即可。</p>
+<blockquote>
+<p>makefile可以修改成如下多编译一个测试程序。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-makefile" data-lang="makefile"><span style="display:flex;"><span>obj-m <span style="color:#f92672">+=</span> mydev.o
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>KDIR <span style="color:#f92672">:=</span> /lib/modules/<span style="color:#66d9ef">$(</span>shell uname -r<span style="color:#66d9ef">)</span>/build
+</span></span><span style="display:flex;"><span>PWD <span style="color:#f92672">:=</span> <span style="color:#66d9ef">$(</span>shell pwd<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">all</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">$(</span>MAKE<span style="color:#66d9ef">)</span> -C <span style="color:#66d9ef">$(</span>KDIR<span style="color:#66d9ef">)</span> M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> LLVM<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> modules
+</span></span><span style="display:flex;"><span>  clang test.c -o test  <span style="color:#75715e">#加入内容</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">clean</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">$(</span>MAKE<span style="color:#66d9ef">)</span> -C <span style="color:#66d9ef">$(</span>KDIR<span style="color:#66d9ef">)</span> M<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>PWD<span style="color:#66d9ef">)</span> LLVM<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> clean
+</span></span><span style="display:flex;"><span>  rm -f test            <span style="color:#75715e">#加入内容</span>
+</span></span></code></pre></div></blockquote>
+</section>
+    
+        
+        
+            
+            
+            
+        
+        <section id="254-epoll">
+
+
+<h5 class="header-anchor-wrapper">2.5.4 epoll
+  <a href="#254-epoll" class="header-anchor-link">
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="1rem" height="1rem" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line>
+</svg>
+
+</a>
+</h5>
+
+<p>epoll机制和poll十分类似。直接贴出等效代码</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/epoll.h&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(<span style="color:#e6db74">&#34;/dev/mydev&#34;</span>, O_RDWR);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (fd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;Failed to open /dev/mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> epfd <span style="color:#f92672">=</span> <span style="color:#a6e22e">epoll_create1</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (epfd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;epoll_create1&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> epoll_event ev;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ev.events <span style="color:#f92672">=</span> EPOLLIN;
+</span></span><span style="display:flex;"><span>    ev.data.fd <span style="color:#f92672">=</span> fd;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">epoll_ctl</span>(epfd, EPOLL_CTL_ADD, fd, <span style="color:#f92672">&amp;</span>ev) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;epoll_ctl mydev&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(epfd);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ev.events <span style="color:#f92672">=</span> EPOLLIN;
+</span></span><span style="display:flex;"><span>    ev.data.fd <span style="color:#f92672">=</span> STDIN_FILENO;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">epoll_ctl</span>(epfd, EPOLL_CTL_ADD, STDIN_FILENO, <span style="color:#f92672">&amp;</span>ev) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;epoll_ctl stdin&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(epfd);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> epoll_event events[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> (<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> n <span style="color:#f92672">=</span> <span style="color:#a6e22e">epoll_wait</span>(epfd, events, <span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (n <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;epoll_wait&#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> n; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (events[i].events <span style="color:#f92672">&amp;</span> EPOLLIN) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">100</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">ssize_t</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(
+</span></span><span style="display:flex;"><span>                    events[i].data.fd,
+</span></span><span style="display:flex;"><span>                    buf,
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">sizeof</span>(buf) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>                );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>                    buf[len] <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\0&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">printf</span>(
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;Read from fd %d: %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+</span></span><span style="display:flex;"><span>                        events[i].data.fd,
+</span></span><span style="display:flex;"><span>                        buf
+</span></span><span style="display:flex;"><span>                    );
+</span></span><span style="display:flex;"><span>                } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">printf</span>(
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;EOF on fd %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>,
+</span></span><span style="display:flex;"><span>                        events[i].data.fd
+</span></span><span style="display:flex;"><span>                    );
+</span></span><span style="display:flex;"><span>                } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;read&#34;</span>);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(epfd);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>与poll相比epoll会记录有多少个fd已经准备好了，并且放入通过<code>epoll_wait</code>传入的events中直接返回准备好的fd个数。</p>
+<p>与poll相比，不用再遍历全部的fd了，假设在poll的数量非常大的情况下使用epoll能显著提升性能。</p>
+</section>
+    
+</article>
+</div>
+
+
+                
+                    
+                
+
+                
+            </div>
+        </main>
+</body>
+</html>
