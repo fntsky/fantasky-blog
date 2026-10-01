@@ -1,7 +1,7 @@
 +++
 date = '2026-10-01T15:33:56+08:00'
 draft = false
-title = '嵌入式linux学习02'
+title = '嵌入式Linux学习02'
 +++
 # 嵌入式Linux学习02
 ## ioctl
