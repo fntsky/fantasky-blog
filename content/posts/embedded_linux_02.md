@@ -1,7 +1,7 @@
 +++
 date = '2026-10-01T15:33:56+08:00'
 draft = false
-title = '嵌入式Linux学习02'
+title = '嵌入式Lxiainux学习02'
 +++
 # 嵌入式Linux学习02
 ## ioctl
@@ -85,7 +85,7 @@ case MYDEV_SET_VALUE:
     break;
 //...
 ```
-其中`arg`是需要写入的`int`类型在用户空间中的地址通过调用ioctl的时候传入变成了`unsigned long`。此时需要用`(int __user *)`将arg转回成用户控件中的地址。
+其中`arg`是需要写入的`int`类型在用户空间中的地址通过调用ioctl的时候传入变成了`unsigned long`。此时需要用`(int __user *)`将arg转回成用户空间中的地址。
 >tips:具体行为还是通过代码来约定并不总是指针。
 
 

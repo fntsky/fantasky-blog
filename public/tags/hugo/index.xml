@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Hugo on Fantasky`s Blog</title>
-    <link>https://blog.fantasky.dpdns.org/tags/hugo/</link>
+    <link>http://localhost:1313/tags/hugo/</link>
     <description>Recent content in Hugo on Fantasky`s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     
     
     
-    <lastBuildDate>Thu, 25 Sep 2025 21:43:14 +0800</lastBuildDate><atom:link href="https://blog.fantasky.dpdns.org/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 25 Sep 2025 21:43:14 +0800</lastBuildDate><atom:link href="http://localhost:1313/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Hugo部署到Vercel完整指南</title>
-      <link>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</link>
+      <link>http://localhost:1313/posts/hugo-to-vercel/</link>
       <pubDate>Thu, 25 Sep 2025 21:43:14 +0800</pubDate>
       
       
       
-      <guid>https://blog.fantasky.dpdns.org/posts/hugo-to-vercel/</guid>
+      <guid>http://localhost:1313/posts/hugo-to-vercel/</guid>
       <description>&lt;p&gt;本文将详细介绍如何使用Hugo创建静态网站并部署到Vercel平台，包括完整的安装、配置和部署流程。&lt;/p&gt;
 
 
