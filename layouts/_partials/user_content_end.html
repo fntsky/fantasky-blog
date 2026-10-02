@@ -1,0 +1,20 @@
+{{- if and .IsPage (eq .Section "posts") -}}
+    {{- $previous := .PrevInSection -}}
+    {{- $next := .NextInSection -}}
+    {{- if or $previous $next -}}
+        <nav class="mobile-post-navigation" aria-label="文章导航">
+            {{- with $previous }}
+                <a class="post-navigation-link previous" href="{{ .RelPermalink }}" rel="prev">
+                    <span class="post-navigation-label">← 上一篇文章</span>
+                    <span class="post-navigation-title">{{ .Title }}</span>
+                </a>
+            {{- end }}
+            {{- with $next }}
+                <a class="post-navigation-link next" href="{{ .RelPermalink }}" rel="next">
+                    <span class="post-navigation-label">下一篇文章 →</span>
+                    <span class="post-navigation-title">{{ .Title }}</span>
+                </a>
+            {{- end }}
+        </nav>
+    {{- end -}}
+{{- end -}}

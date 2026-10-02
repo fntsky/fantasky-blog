@@ -1,0 +1,34 @@
+{{- define "content" -}}
+
+{{ if eq .Section "posts" }}
+    <aside class="other-posts-sidebar" aria-label="其他文章">
+        <strong>其他文章</strong>
+        <nav aria-label="网站文章列表">
+            <ul>
+                {{ range where .Site.RegularPages "Section" "posts" }}
+                    {{ if ne .RelPermalink $.RelPermalink }}
+                        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                    {{ end }}
+                {{ end }}
+            </ul>
+        </nav>
+    </aside>
+{{ end }}
+
+{{ if and (ne .TableOfContents "<nav id=\"TableOfContents\"></nav>") (.Store.Get "params").enable_toc }}
+    {{ $toc_position := (.Store.Get "params").toc_position }}
+    {{ if in (slice "left" "right") $toc_position }}
+        {{ partial "fixed-toc.html" (dict "context" . "position" $toc_position) }}
+    {{ else if eq $toc_position "top" }}
+        {{ $enable_collapsible_toc := (.Store.Get "params").enable_collapsible_toc }}
+        {{ partial "collapsible-menu.html" (dict "type" "toc" "context" . "enable" $enable_collapsible_toc) }}
+    {{ end }}
+{{ end }}
+
+{{ if .Content }}
+    <div class="content-margin">
+        {{- partial "content.html" (dict "ctx" . "content" .Content) -}}
+    </div>
+{{ end }}
+
+{{- end -}}
