@@ -2,6 +2,10 @@
 name = "rs_blog"
 schema_version = 1
 
+[staticweb]
+directory = "./frontend/dist/assets"
+route = "/blog/assets"
+
 [proxyhttp]
 working_directory = "."
 script = "./start.sh"
