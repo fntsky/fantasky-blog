@@ -1,9 +1,19 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import DOMPurify from 'dompurify'
 import MarkdownIt from 'markdown-it'
+import { mapPosition } from './scroll-map'
 
 const markdown = new MarkdownIt({ html: false, linkify: true, typographer: true })
+// Code renderers do not include token attributes by default.
+for (const type of ['fence', 'code_block']) {
+  const render = markdown.renderer.rules[type]
+  markdown.renderer.rules[type] = (tokens, index, options, env, renderer) => {
+    const html = render(tokens, index, options, env, renderer)
+    const token = tokens[index]
+    return token.map ? html.replace('<pre', `<pre data-source-start="${token.map[0]}" data-source-end="${token.map[1]}"`) : html
+  }
+}
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 const pathname = window.location.pathname.replace(/\/$/, '') || basePath
 const localPath = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : ''
@@ -16,6 +26,9 @@ const isAdminPage = computed(() => localPath === '/admin' || localPath === '/adm
 const editorMode = computed(() => editSlug ? 'edit' : localPath === '/admin/posts/new' ? 'new' : 'list')
 
 const posts = ref([])
+const selectedTag = ref('全部')
+const availableTags = computed(() => [...new Set(posts.value.flatMap((item) => item.tags))])
+const filteredPosts = computed(() => selectedTag.value === '全部' ? posts.value : posts.value.filter((item) => item.tags.includes(selectedTag.value)))
 const post = ref(null)
 const currentUser = ref(null)
 const loading = ref(true)
@@ -24,13 +37,116 @@ const sessionError = ref(false)
 const error = ref('')
 const editorError = ref('')
 const saving = ref(false)
-const preview = ref(false)
 const tagsText = ref('')
 const editor = ref({ slug: '', title: '', date: '', excerpt: '', markdown: '' })
-const renderedMarkdown = computed(() =>
-  post.value ? DOMPurify.sanitize(markdown.render(post.value.markdown)) : '',
-)
-const renderedPreview = computed(() => DOMPurify.sanitize(markdown.render(editor.value.markdown || '')))
+const articleContent = computed(() => {
+  if (!post.value) return { html: '', headings: [] }
+  const tokens = markdown.parse(post.value.markdown, {})
+  const headings = []
+  tokens.forEach((token, index) => {
+    if (token.type !== 'heading_open') return
+    const inline = tokens[index + 1]
+    const title = (inline?.children || []).map((child) => child.type === 'image' ? child.content : child.type === 'text' || child.type === 'code_inline' ? child.content : child.type === 'softbreak' ? ' ' : '').join('') || inline?.content || ''
+    const id = `section-${headings.length + 1}`
+    token.attrSet('id', id)
+    headings.push({ id, title, level: Number(token.tag.slice(1)) })
+  })
+  return { html: DOMPurify.sanitize(markdown.renderer.render(tokens, markdown.options, {})), headings }
+})
+const renderedMarkdown = computed(() => articleContent.value.html)
+const wideStudio = ref(window.matchMedia('(min-width: 1700px)').matches)
+const studioMedia = window.matchMedia('(min-width: 1700px)')
+const updateStudioWidth = (event) => { wideStudio.value = event.matches }
+onMounted(() => studioMedia.addEventListener('change', updateStudioWidth))
+onUnmounted(() => studioMedia.removeEventListener('change', updateStudioWidth))
+const markdownInput = ref(null)
+const previewElement = ref(null)
+const isWriting = computed(() => isAdminPage.value && editorMode.value !== 'list' && Boolean(currentUser.value) && !loading.value)
+const renderedPreview = computed(() => {
+  const tokens = markdown.parse(editor.value.markdown || '', {})
+  tokens.forEach((token) => {
+    if (token.map && token.type !== 'inline' && token.nesting !== -1) {
+      token.attrSet('data-source-start', String(token.map[0]))
+      token.attrSet('data-source-end', String(token.map[1]))
+    }
+  })
+  return DOMPurify.sanitize(markdown.renderer.render(tokens, markdown.options, {}))
+})
+let sourceMeasurement = null
+let syncFrame = 0
+const expectedScroll = { source: null, preview: null }
+onUnmounted(() => cancelAnimationFrame(syncFrame))
+function measureSource(input) {
+  const style = getComputedStyle(input)
+  const key = `${input.clientWidth}/${style.font}/${style.lineHeight}/${style.padding}/${input.value}`
+  if (sourceMeasurement?.key === key) return sourceMeasurement
+  const mirror = document.createElement('div')
+  for (const property of ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing', 'padding', 'boxSizing', 'tabSize', 'wordBreak', 'overflowWrap', 'textIndent']) mirror.style[property] = style[property]
+  Object.assign(mirror.style, { position: 'fixed', visibility: 'hidden', pointerEvents: 'none', whiteSpace: 'pre-wrap', width: `${input.clientWidth}px`, top: '0', left: '0' })
+  const lines = input.value.split('\n')
+  const markers = lines.map((line, index) => {
+    const marker = document.createElement('span')
+    marker.textContent = '\u200b'
+    mirror.append(marker, document.createTextNode(line + (index < lines.length - 1 ? '\n' : '')))
+    return marker
+  })
+  document.body.append(mirror)
+  const top = mirror.getBoundingClientRect().top
+  const positions = markers.map((marker) => marker.getBoundingClientRect().top - top)
+  mirror.remove()
+  sourceMeasurement = { key, positions }
+  return sourceMeasurement
+}
+function scrollPoints(input, pane, forScroll = false) {
+  const { positions } = measureSource(input)
+  const sourceMax = Math.max(0, input.scrollHeight - input.clientHeight)
+  const previewMax = Math.max(0, pane.scrollHeight - pane.clientHeight)
+  const paneTop = pane.getBoundingClientRect().top
+  const points = [{ source: 0, preview: 0 }]
+  for (const block of pane.querySelectorAll('[data-source-start]')) {
+    const source = positions[Number(block.dataset.sourceStart)]
+    const preview = block.getBoundingClientRect().top - paneTop + pane.scrollTop
+    if (source === undefined) continue
+    const point = { source: forScroll ? Math.min(sourceMax, source) : source, preview: forScroll ? Math.min(previewMax, preview) : preview }
+    const previous = points.at(-1)
+    if (point.source > previous.source && point.preview >= previous.preview && (!forScroll || point.source < sourceMax && point.preview < previewMax)) points.push(point)
+  }
+  points.push(forScroll ? { source: sourceMax, preview: previewMax } : { source: input.scrollHeight, preview: pane.scrollHeight })
+  return points
+}
+function setSyncedScroll(side, element, value) {
+  const target = Math.max(0, Math.min(element.scrollHeight - element.clientHeight, value))
+  if (Math.abs(element.scrollTop - target) < 1) return
+  expectedScroll[side] = target
+  element.scrollTop = target
+}
+function syncScroll(side) {
+  const element = side === 'source' ? markdownInput.value : previewElement.value
+  if (!element) return
+  const expected = expectedScroll[side]
+  expectedScroll[side] = null
+  if (expected !== null && Math.abs(element.scrollTop - expected) < 2) return
+  cancelAnimationFrame(syncFrame)
+  syncFrame = requestAnimationFrame(() => {
+    const input = markdownInput.value
+    const pane = previewElement.value
+    if (!input || !pane) return
+    const points = scrollPoints(input, pane, true)
+    if (side === 'source') setSyncedScroll('preview', pane, mapPosition(points, input.scrollTop))
+    else setSyncedScroll('source', input, mapPosition(points, pane.scrollTop, 'preview', 'source'))
+  })
+}
+async function alignPreview() {
+  await nextTick()
+  const input = markdownInput.value
+  const pane = previewElement.value
+  if (!input || !pane) return
+  cancelAnimationFrame(syncFrame)
+  const line = input.value.slice(0, input.selectionStart).split('\n').length - 1
+  const sourceY = measureSource(input).positions[line] || 0
+  const viewportY = Math.max(0, Math.min(input.clientHeight, sourceY - input.scrollTop))
+  setSyncedScroll('preview', pane, mapPosition(scrollPoints(input, pane), sourceY) - viewportY)
+}
 const articleUrl = (postSlug) => `${basePath}/posts/${encodeURIComponent(postSlug)}`
 const editUrl = (postSlug) => `${basePath}/admin/posts/${encodeURIComponent(postSlug)}/edit`
 const formatDate = (date) => {
@@ -164,17 +280,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="site-shell">
+  <div class="site-shell" :class="{ 'writing-shell': isWriting }">
     <header class="topbar">
-      <a class="brand" :href="`${basePath}/`" aria-label="RS Blog 首页">
-        <span class="brand-mark">R</span>
-        <span>RS <span class="brand-light">BLOG</span></span>
+      <a class="brand" :href="isWriting ? `${basePath}/admin` : `${basePath}/`" aria-label="Fantasky`s Blog 首页">
+        <span>Fantasky`s <span class="brand-light">Blog</span></span>
       </a>
+      <div v-if="isWriting" class="studio-title"><p class="eyebrow">{{ editorMode === 'edit' ? 'EDIT ARTICLE' : 'NEW ARTICLE' }}</p><h1>{{ editorMode === 'edit' ? '编辑文章' : '写一篇新文章' }}</h1></div>
       <nav class="topnav" aria-label="主导航">
         <a :href="`${basePath}/`" :class="{ active: !isArticlePage && !isAdminPage }">文章</a>
         <template v-if="currentUser">
           <a :href="`${basePath}/admin`" :class="{ active: isAdminPage }">管理文章</a>
-          <a class="nav-write" :href="`${basePath}/admin/posts/new`">写文章 <span>＋</span></a>
+          <button v-if="isWriting" class="primary-button studio-publish" type="submit" form="article-editor" :disabled="saving">{{ saving ? '正在保存…' : editorMode === 'edit' ? '保存修改' : '发布文章' }} ↗</button>
+          <a v-else class="nav-write" :href="`${basePath}/admin/posts/new`">写文章 <span>＋</span></a>
           <span class="nav-note"><span class="status-dot"></span>{{ currentUser.username }}</span>
         </template>
         <a v-else-if="!sessionLoading" class="login-link" href="/ui">Formicary 登录 ↗</a>
@@ -208,63 +325,52 @@ onMounted(async () => {
         <div v-else class="empty-state"><span class="empty-mark">✳</span><p>还没有文章</p><a :href="`${basePath}/admin/posts/new`">写下第一篇文章 →</a></div>
       </template>
       <section v-else class="editor-page">
-        <div class="editor-heading">
-          <div><p class="eyebrow">{{ editorMode === 'edit' ? 'EDIT ARTICLE' : 'NEW ARTICLE' }}</p><h1>{{ editorMode === 'edit' ? '编辑文章' : '写一篇新文章' }}</h1></div>
-          <a class="cancel-link" :href="`${basePath}/admin`">取消并返回</a>
-        </div>
+
         <p v-if="editorError" class="form-error" role="alert">{{ editorError }}</p>
-        <form class="editor-form" @submit.prevent="savePost">
+        <form id="article-editor" class="editor-form" @submit.prevent="savePost" @invalid.capture="($event) => { const settings = $event.target.closest('details'); if (settings) settings.open = true }">
           <div class="editor-main">
-            <label class="field-label">文章标题<input v-model="editor.title" required maxlength="120" placeholder="给这篇文章一个标题" /></label>
-            <div class="markdown-toolbar"><span>MARKDOWN BODY</span><button type="button" :class="{ selected: !preview }" @click="preview = false">编辑</button><button type="button" :class="{ selected: preview }" @click="preview = true">预览</button></div>
-            <textarea v-if="!preview" v-model="editor.markdown" class="markdown-editor" required maxlength="1500000" placeholder="# 从这里开始写作…&#10;&#10;支持标准 Markdown 语法。"></textarea>
-            <div v-else class="markdown-preview markdown-body" v-html="renderedPreview"></div>
-            <p class="editor-help">支持 Markdown；原始 HTML 不会被渲染。建议先预览再保存。</p>
+            <div class="writing-panes">
+              <section class="writing-pane" aria-label="Markdown 编辑">
+                <div class="markdown-toolbar"><span>MARKDOWN</span><span class="pane-label">编辑</span></div>
+                <textarea ref="markdownInput" v-model="editor.markdown" @input="alignPreview" @click="alignPreview" @keyup="alignPreview" @select="alignPreview" @scroll="syncScroll('source')" class="markdown-editor" aria-label="文章正文（Markdown）" required maxlength="1500000" placeholder="# 从这里开始写作…&#10;&#10;支持标准 Markdown 语法。"></textarea>
+              </section>
+              <section class="writing-pane preview-pane" aria-label="文章实时预览">
+                <div class="markdown-toolbar"><span>PREVIEW</span><span class="pane-label">实时预览</span></div>
+                <div ref="previewElement" @scroll="syncScroll('preview')" @load.capture="alignPreview" class="markdown-preview markdown-body" v-html="renderedPreview"></div>
+              </section>
+            </div>
           </div>
-          <aside class="editor-sidebar">
+          <details class="article-settings" :open="wideStudio"><summary>文章信息 <span>URL · 日期 · 摘要 · 标签</span></summary><aside class="editor-sidebar">
+            <label class="field-label">文章标题<input v-model="editor.title" required maxlength="120" placeholder="给这篇文章一个标题" /></label>
             <div class="sidebar-title"><span>文章信息</span><span>01 — 04</span></div>
             <label v-if="editorMode === 'new'" class="field-label">URL 别名<input v-model="editor.slug" required maxlength="80" pattern="[a-z0-9]+([a-z0-9-]*[a-z0-9])?" placeholder="my-first-post" /><button class="text-action" type="button" @click="slugFromTitle">从英文标题生成</button></label>
             <label v-else class="field-label">URL 别名<input :value="editor.slug" disabled /></label>
             <label class="field-label">发布日期<input v-model="editor.date" type="date" required /></label>
             <label class="field-label">文章摘要<textarea v-model="editor.excerpt" maxlength="500" rows="3" placeholder="列表页展示的简短介绍"></textarea></label>
             <label class="field-label">标签<input v-model="tagsText" placeholder="Rust, 随笔, 工程" /><span class="field-hint">用逗号分隔，最多 12 个</span></label>
-            <button class="primary-button save-button" type="submit" :disabled="saving">{{ saving ? '正在保存…' : editorMode === 'edit' ? '保存修改' : '发布文章' }} <span>↗</span></button>
-            <p class="save-note">保存后会立即公开显示在博客中。</p>
-          </aside>
+
+          </aside></details>
         </form>
       </section>
     </main>
 
     <main v-else-if="!isArticlePage" class="home-page">
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> NOTES &amp; IDEAS</p>
-          <h1>写点代码，<br /><span>也写下思考。</span></h1>
-          <p class="hero-description">关于工程、学习，以及构建事物时遇到的真实问题。<br class="desktop-break" />用 Markdown 书写，在这里慢慢阅读。</p>
-          <a class="scroll-link" href="#articles"><span class="scroll-arrow">↓</span> 向下阅读</a>
-        </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
-          <div class="art-center"><span>读</span></div>
-          <span class="art-dot dot-one"></span><span class="art-dot dot-two"></span><span class="art-dot dot-three"></span>
-          <span class="art-caption">A PLACE TO THINK<br />AND MAKE</span>
-        </div>
-        <div class="hero-index"><span>01</span><span class="index-line"></span><span>阅读空间</span></div>
-      </section>
       <section id="articles" class="articles-section">
-        <div class="section-heading"><div><p class="eyebrow">THE JOURNAL</p><h2>最近文章 <span class="count">{{ String(posts.length).padStart(2, '0') }}</span></h2></div><p class="section-note">把值得回看的东西，<br />留在这里。</p></div>
+        <div class="section-heading"><div><p class="eyebrow">THE JOURNAL</p><h1>最近文章 <span class="count">{{ String(posts.length).padStart(2, '0') }}</span></h1></div></div>
         <p v-if="loading" class="state-message">正在整理文章…</p>
         <p v-else-if="error" class="state-message error-message">{{ error }}</p>
-        <div v-else-if="posts.length" class="post-list">
-          <article v-for="(item, index) in posts" :key="item.slug" class="post-card">
+        <div v-else-if="posts.length" class="journal-content">
+          <div class="filter-bar" aria-label="按标签筛选文章"><button v-for="tag in ['全部', ...availableTags]" :key="tag" type="button" :class="{ selected: selectedTag === tag }" :aria-pressed="selectedTag === tag" @click="selectedTag = tag">{{ tag }}<span v-if="tag === '全部'"> / {{ posts.length }}</span></button></div>
+          <div class="post-list">
+          <article v-for="(item, index) in filteredPosts" :key="item.slug" class="post-card">
             <div class="post-number">{{ String(index + 1).padStart(2, '0') }}</div>
             <div class="post-main"><div class="post-meta"><time :datetime="item.date">{{ formatDate(item.date) }}</time><span class="meta-divider">/</span><span>阅读笔记</span></div><h3><a :href="articleUrl(item.slug)">{{ item.title }}<span class="title-arrow">↗</span></a></h3><p class="post-excerpt">{{ item.excerpt }}</p><div class="tag-list"><span v-for="tag in item.tags" :key="tag" class="tag">{{ tag }}</span></div></div>
             <a class="read-link" :href="articleUrl(item.slug)" :aria-label="`阅读：${item.title}`">阅读文章 <span>↗</span></a>
           </article>
+          </div>
         </div>
         <div v-else class="empty-state"><span class="empty-mark">✳</span><p>还没有文章</p><span>通过 Formicary 登录后，可以创建第一篇文章。</span></div>
       </section>
-      <section class="about-strip"><span class="about-icon">✳</span><p>用 <strong>Rust</strong>、<strong>Vue</strong> 和 <strong>SQLite</strong> 搭建。文章管理复用 Formicary 登录。</p><span class="about-label">BUILT FOR READING</span></section>
     </main>
 
     <main v-else class="article-page">
@@ -272,13 +378,18 @@ onMounted(async () => {
       <a v-if="currentUser && post" class="article-edit-link" :href="editUrl(post.slug)">编辑这篇文章 →</a>
       <p v-if="loading" class="state-message article-state">正在打开文章…</p>
       <p v-else-if="error" class="state-message error-message article-state">{{ error }}</p>
-      <article v-else-if="post" class="article-layout">
-        <header class="article-header"><div class="post-meta"><time :datetime="post.date">{{ formatDate(post.date) }}</time><span class="meta-divider">/</span><span>阅读笔记</span></div><h1>{{ post.title }}</h1><p class="article-excerpt">{{ post.excerpt }}</p><div class="tag-list"><span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span></div><div class="article-rule"><span></span><span></span><span></span></div></header>
+      <div v-else-if="post" class="article-with-toc" :class="{ 'has-toc': articleContent.headings.length }">
+      <article class="article-layout">
+        <header class="article-header"><div class="post-meta"><time :datetime="post.date">{{ formatDate(post.date) }}</time></div><h1>{{ post.title }}</h1><p class="article-excerpt">{{ post.excerpt }}</p><div class="tag-list"><span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span></div><div class="article-rule"><span></span><span></span><span></span></div></header>
         <div class="markdown-body" v-html="renderedMarkdown"></div>
         <footer class="article-footer"><span>—</span><p>感谢阅读</p><a :href="`${basePath}/`">继续浏览文章 <span>↗</span></a></footer>
       </article>
+      <aside v-if="articleContent.headings.length" class="article-toc" aria-label="文章目录">
+        <nav><h2>目录</h2><ol><li v-for="heading in articleContent.headings" :key="heading.id" :style="{ '--heading-indent': `${Math.min(heading.level - 1, 3) * 12}px` }"><a :href="`#${heading.id}`">{{ heading.title }}</a></li></ol></nav>
+      </aside>
+      </div>
     </main>
 
-    <footer class="site-footer"><a class="footer-brand" :href="`${basePath}/`">RS <span>BLOG</span></a><span>用心记录，安静阅读。</span><span class="footer-year">© 2026</span></footer>
+    <footer class="site-footer"><span class="footer-year">2026</span></footer>
   </div>
 </template>
