@@ -86,9 +86,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut database = Connection::open(&database_path)?;
     database.execute_batch("PRAGMA foreign_keys = ON;")?;
     migrations::migrate(&mut database)?;
-    if posts::count(&database)? == 0 {
-        posts::import_markdown_directory(&database, &content_directory)?;
-    }
+    posts::initialize(&mut database, &content_directory)?;
 
     let state = AppState {
         database: Arc::new(Mutex::new(database)),
@@ -99,8 +97,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .route("/api/posts", get(list_posts))
         .route("/api/posts/{slug}", get(get_post))
         .route("/api/admin/session", get(admin_session))
-        .route("/api/admin/posts", post(create_post))
-        .route("/api/admin/posts/{slug}", put(update_post))
+        .route("/api/admin/posts", post(create_post).get(admin_list_posts))
+        .route(
+            "/api/admin/posts/{slug}",
+            put(update_post).get(admin_get_post).delete(delete_post),
+        )
+        .route("/api/admin/posts/{slug}/visibility", put(set_visibility))
         .route("/api", any(api_not_found))
         .route("/api/{*path}", any(api_not_found))
         .fallback_service(ServeDir::new(&frontend_directory).fallback(ServeFile::new(index_file)))
@@ -131,7 +133,7 @@ async fn list_posts(
         .database
         .lock()
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let posts = posts::list(&database, limit).map_err(|error| {
+    let posts = posts::list(&database, limit, false).map_err(|error| {
         eprintln!("Could not list blog posts: {error}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
@@ -151,9 +153,64 @@ async fn get_post(
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
     match post {
-        Some(post) => Ok(Json(PostResponse { post })),
-        None => Err(StatusCode::NOT_FOUND),
+        Some(post) if !post.hidden => Ok(Json(PostResponse { post })),
+        _ => Err(StatusCode::NOT_FOUND),
     }
+}
+
+async fn admin_list_posts(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<PostList>, ApiError> {
+    current_user(&headers).map_err(ApiError::Auth)?;
+    let database = state.database.lock().map_err(|_| ApiError::Internal)?;
+    let posts = posts::list(&database, i64::MAX as usize, true).map_err(|_| ApiError::Internal)?;
+    Ok(Json(PostList { posts }))
+}
+
+async fn admin_get_post(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(slug): Path<String>,
+) -> Result<Json<PostResponse>, ApiError> {
+    current_user(&headers).map_err(ApiError::Auth)?;
+    let database = state.database.lock().map_err(|_| ApiError::Internal)?;
+    let post = posts::find(&database, &slug)
+        .map_err(|_| ApiError::Internal)?
+        .ok_or(ApiError::NotFound)?;
+    Ok(Json(PostResponse { post }))
+}
+
+async fn delete_post(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(slug): Path<String>,
+) -> Result<StatusCode, ApiError> {
+    current_user(&headers).map_err(ApiError::Auth)?;
+    let database = state.database.lock().map_err(|_| ApiError::Internal)?;
+    if !posts::delete(&database, &slug).map_err(|_| ApiError::Internal)? {
+        return Err(ApiError::NotFound);
+    }
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Deserialize)]
+struct Visibility {
+    hidden: bool,
+}
+
+async fn set_visibility(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(slug): Path<String>,
+    Json(input): Json<Visibility>,
+) -> Result<Json<PostResponse>, ApiError> {
+    let user = current_user(&headers).map_err(ApiError::Auth)?;
+    let database = state.database.lock().map_err(|_| ApiError::Internal)?;
+    let post = posts::set_hidden(&database, &slug, input.hidden, &user.username)
+        .map_err(|_| ApiError::Internal)?
+        .ok_or(ApiError::NotFound)?;
+    Ok(Json(PostResponse { post }))
 }
 
 async fn admin_session(headers: HeaderMap) -> Result<Json<SessionResponse>, AuthError> {

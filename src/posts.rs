@@ -14,6 +14,7 @@ pub struct PostSummary {
     pub excerpt: String,
     pub date: String,
     pub tags: Vec<String>,
+    pub hidden: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -23,11 +24,39 @@ pub struct PostDetail {
     pub excerpt: String,
     pub date: String,
     pub tags: Vec<String>,
+    pub hidden: bool,
     pub markdown: String,
 }
 
-pub fn count(database: &Connection) -> rusqlite::Result<i64> {
-    database.query_row("SELECT COUNT(*) FROM posts", [], |row| row.get(0))
+pub fn initialize(database: &mut Connection, directory: &Path) -> Result<(), Box<dyn Error>> {
+    let imported: bool =
+        database.query_row("SELECT imported FROM blog_state WHERE id = 1", [], |row| {
+            row.get(0)
+        })?;
+    if !imported {
+        let transaction = database.transaction()?;
+        import_markdown_directory(&transaction, directory)?;
+        transaction.execute("UPDATE blog_state SET imported = 1 WHERE id = 1", [])?;
+        transaction.commit()?;
+    }
+    Ok(())
+}
+
+pub fn delete(database: &Connection, slug: &str) -> rusqlite::Result<bool> {
+    Ok(database.execute("DELETE FROM posts WHERE slug = ?1", [slug])? > 0)
+}
+
+pub fn set_hidden(
+    database: &Connection,
+    slug: &str,
+    hidden: bool,
+    username: &str,
+) -> rusqlite::Result<Option<PostDetail>> {
+    database.execute(
+        "UPDATE posts SET hidden = ?1, updated_by = ?2, updated_at = ?3 WHERE slug = ?4",
+        params![hidden, username, unix_time() as i64, slug],
+    )?;
+    find(database, slug)
 }
 
 pub fn create(
@@ -135,18 +164,23 @@ pub fn import_markdown_directory(
     Ok(())
 }
 
-pub fn list(database: &Connection, limit: usize) -> rusqlite::Result<Vec<PostSummary>> {
+pub fn list(
+    database: &Connection,
+    limit: usize,
+    include_hidden: bool,
+) -> rusqlite::Result<Vec<PostSummary>> {
     let mut statement = database.prepare(
-        "SELECT slug, title, excerpt, published_on, tags_json
-         FROM posts ORDER BY published_on DESC, slug ASC LIMIT ?1",
+        "SELECT slug, title, excerpt, published_on, tags_json, hidden
+         FROM posts WHERE (hidden = 0 OR ?2) ORDER BY published_on DESC, slug ASC LIMIT ?1",
     )?;
-    let rows = statement.query_map(params![limit as i64], |row| {
+    let rows = statement.query_map(params![limit as i64, include_hidden], |row| {
         let tags_json: String = row.get(4)?;
         Ok(PostSummary {
             slug: row.get(0)?,
             title: row.get(1)?,
             excerpt: row.get(2)?,
             date: row.get(3)?,
+            hidden: row.get(5)?,
             tags: serde_json::from_str(&tags_json).unwrap_or_default(),
         })
     })?;
@@ -156,7 +190,7 @@ pub fn list(database: &Connection, limit: usize) -> rusqlite::Result<Vec<PostSum
 pub fn find(database: &Connection, slug: &str) -> rusqlite::Result<Option<PostDetail>> {
     database
         .query_row(
-            "SELECT slug, title, excerpt, published_on, tags_json, markdown
+            "SELECT slug, title, excerpt, published_on, tags_json, markdown, hidden
              FROM posts WHERE slug = ?1",
             params![slug],
             |row| {
@@ -168,6 +202,7 @@ pub fn find(database: &Connection, slug: &str) -> rusqlite::Result<Option<PostDe
                     date: row.get(3)?,
                     tags: serde_json::from_str(&tags_json).unwrap_or_default(),
                     markdown: row.get(5)?,
+                    hidden: row.get(6)?,
                 })
             },
         )
@@ -299,4 +334,68 @@ fn unix_time() -> u64 {
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_secs())
         .unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn visibility_deletion_and_initial_import_survive_restart() {
+        let mut database = Connection::open_in_memory().unwrap();
+        crate::migrations::migrate(&mut database).unwrap();
+        initialize(&mut database, Path::new("content")).unwrap();
+        let imported = list(&database, 100, true).unwrap();
+        assert!(!imported.is_empty());
+        let slug = &imported[0].slug;
+        assert!(
+            set_hidden(&database, slug, true, "admin")
+                .unwrap()
+                .unwrap()
+                .hidden
+        );
+        assert!(
+            !list(&database, 100, false)
+                .unwrap()
+                .iter()
+                .any(|post| &post.slug == slug)
+        );
+        assert!(
+            list(&database, 100, true)
+                .unwrap()
+                .iter()
+                .any(|post| &post.slug == slug)
+        );
+        update(
+            &database,
+            slug,
+            "Edited",
+            "2026-10-25",
+            "",
+            &[],
+            "Body",
+            "admin",
+        )
+        .unwrap();
+        assert!(find(&database, slug).unwrap().unwrap().hidden);
+        assert!(
+            !set_hidden(&database, slug, false, "admin")
+                .unwrap()
+                .unwrap()
+                .hidden
+        );
+        for post in imported {
+            assert!(delete(&database, &post.slug).unwrap());
+            assert!(!delete(&database, &post.slug).unwrap());
+            assert!(find(&database, &post.slug).unwrap().is_none());
+        }
+        crate::migrations::migrate(&mut database).unwrap();
+        initialize(&mut database, Path::new("content")).unwrap();
+        assert!(list(&database, 100, true).unwrap().is_empty());
+        assert!(
+            set_hidden(&database, "missing", true, "admin")
+                .unwrap()
+                .is_none()
+        );
+    }
 }

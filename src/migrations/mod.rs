@@ -1,12 +1,13 @@
 mod v1;
 mod v2;
+mod v3;
 
 use std::error::Error;
 use std::fmt;
 
 use rusqlite::Connection;
 
-const LATEST_VERSION: u32 = 2;
+const LATEST_VERSION: u32 = 3;
 
 #[derive(Debug)]
 pub(crate) enum MigrationError {
@@ -64,6 +65,7 @@ pub fn migrate(database: &mut Connection) -> Result<(), MigrationError> {
         match next_version {
             1 => v1::up(&transaction)?,
             2 => v2::up(&transaction)?,
+            3 => v3::up(&transaction)?,
             missing => return Err(MigrationError::MissingMigration(missing).into()),
         }
         transaction.pragma_update(None, "user_version", next_version)?;

@@ -8,7 +8,7 @@ Formicary 的正式模块配置位于 `formicary/chamber/rs_blog/chamber.toml`�
 
 打开：<http://localhost:53212/blog/>
 
-使用 Formicary 登录后，可通过导航栏进入文章管理，在 `/blog/admin/posts/new` 写作，在 `/blog/admin/posts/{slug}/edit` 编辑。未登录时文章仍可阅读，管理页面会引导用户前往 Formicary 登录页 `/ui`。
+使用 Formicary 登录后，可通过导航栏进入文章管理，在 `/blog/admin/posts/new` 写作，在 `/blog/admin/posts/{slug}/edit` 编辑。管理列表支持隐藏、恢复公开和永久删除文章（删除前需确认）。隐藏文章仅能在登录后的管理页面读取和编辑，公开列表和详情均不可访问。未登录时公开文章仍可阅读，管理页面会引导用户前往 Formicary 登录页 `/ui`。
 
 Formicary 在转发 `/blog` 请求前验证原有登录会话，并将已验证的用户名传给博客后端；博客仅对带有该可信身份的管理请求开放写入。浏览器不能通过自带同名请求头绕过 Formicary 的会话验证。
 
@@ -47,7 +47,7 @@ make copy-to-chamber
 
 ## 文章存储
 
-首次启动时，如果 SQLite 中还没有文章，服务会将 `content/` 内的 `.md` 文件导入数据库。后续 SQLite 是文章数据的权威来源，重启时不会用 Markdown 文件覆盖通过页面保存的内容。新文章和编辑内容会保存在 `data/blog.sqlite3`。
+首次初始化时，如果 SQLite 中还没有文章，服务会将 `content/` 内的 `.md` 文件导入数据库。后续 SQLite 是文章数据的权威来源，重启时不会用 Markdown 文件覆盖通过页面保存的内容。初始化完成后，即使删除全部文章，重启也不会重新导入示例内容。新文章和编辑内容会保存在 `data/blog.sqlite3`。
 
 Markdown 文件使用 YAML 风格的简单 front matter：
 
@@ -71,8 +71,12 @@ tags: [Rust, 随笔]
 - `GET /api/posts`：公开文章列表，可用 `?limit=20` 限制数量（1–100）。
 - `GET /api/posts/{slug}`：公开文章详情，包含 Markdown 正文。
 - `GET /api/admin/session`：返回当前 Formicary 登录用户；未登录返回 `401`。
+- `GET /api/admin/posts`：管理文章列表，包含隐藏文章，需要 Formicary 登录。
+- `GET /api/admin/posts/{slug}`：管理文章详情，包含隐藏文章，需要 Formicary 登录。
+- `PUT /api/admin/posts/{slug}/visibility`：设置可见性，JSON 为 `{"hidden": true}`（隐藏）或 `{"hidden": false}`（恢复公开），需要 Formicary 登录。
+- `DELETE /api/admin/posts/{slug}`：永久删除文章，需要 Formicary 登录。
 - `POST /api/admin/posts`：创建文章，需要 Formicary 登录。
 - `PUT /api/admin/posts/{slug}`：编辑文章，需要 Formicary 登录。
 - `GET /healthz`：服务健康状态。
 
-通过 Formicary 访问时，前缀是 `/blog`，例如 `/blog/api/posts`。项目暂不提供注册、博客账号、删除或独立登录功能。
+通过 Formicary 访问时，前缀是 `/blog`，例如 `/blog/api/posts`。项目暂不提供注册、博客账号或独立登录功能。

@@ -37,6 +37,7 @@ const sessionError = ref(false)
 const error = ref('')
 const editorError = ref('')
 const saving = ref(false)
+const managing = ref(false)
 const tagsText = ref('')
 const editor = ref({ slug: '', title: '', date: '', excerpt: '', markdown: '' })
 const articleContent = computed(() => {
@@ -188,10 +189,10 @@ async function loadAdminPage() {
 
   try {
     if (editorMode.value === 'list') {
-      const data = await readResponse(await fetch(`${basePath}/api/posts`))
+      const data = await readResponse(await fetch(`${basePath}/api/admin/posts`))
       posts.value = data.posts
     } else if (editorMode.value === 'edit') {
-      const data = await readResponse(await fetch(`${basePath}/api/posts/${encodeURIComponent(editSlug)}`))
+      const data = await readResponse(await fetch(`${basePath}/api/admin/posts/${encodeURIComponent(editSlug)}`))
       post.value = data.post
       editor.value = {
         slug: data.post.slug,
@@ -237,11 +238,34 @@ async function savePost() {
       },
     )
     const data = await readResponse(response)
-    window.location.assign(articleUrl(data.post.slug))
+    window.location.assign(data.post.hidden ? `${basePath}/admin` : articleUrl(data.post.slug))
   } catch (saveError) {
     editorError.value = saveError.message || '保存失败，请稍后重试。'
   } finally {
     saving.value = false
+  }
+}
+
+async function managePost(item, remove = false) {
+  if (remove && !window.confirm(`确定永久删除「${item.title}」吗？此操作无法撤销。`)) return
+  managing.value = true
+  editorError.value = ''
+  try {
+    const response = await fetch(`${basePath}/api/admin/posts/${encodeURIComponent(item.slug)}${remove ? '' : '/visibility'}`, {
+      method: remove ? 'DELETE' : 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      ...(remove ? {} : { body: JSON.stringify({ hidden: !item.hidden }) }),
+    })
+    if (remove && response.ok) posts.value = posts.value.filter((post) => post.slug !== item.slug)
+    else {
+      const data = await readResponse(response)
+      Object.assign(item, data.post)
+    }
+  } catch (error) {
+    editorError.value = error.message || '操作失败，请稍后重试。'
+  } finally {
+    managing.value = false
   }
 }
 
@@ -315,11 +339,11 @@ onMounted(async () => {
           <a class="primary-button" :href="`${basePath}/admin/posts/new`">新建文章 <span>＋</span></a>
         </div>
         <p v-if="editorError" class="form-error">{{ editorError }}</p>
-        <div v-else-if="posts.length" class="manage-list">
+        <div v-if="posts.length" class="manage-list">
           <article v-for="item in posts" :key="item.slug" class="manage-row">
             <div class="manage-date">{{ formatDate(item.date) }}</div>
-            <div class="manage-copy"><h2>{{ item.title }}</h2><p>{{ item.excerpt }}</p></div>
-            <div class="manage-actions"><a :href="articleUrl(item.slug)">查看 ↗</a><a :href="editUrl(item.slug)">编辑 →</a></div>
+            <div class="manage-copy"><h2>{{ item.title }} <span class="visibility-label">{{ item.hidden ? '已隐藏' : '公开' }}</span></h2><p>{{ item.excerpt }}</p></div>
+            <div class="manage-actions"><a v-if="!item.hidden" :href="articleUrl(item.slug)">查看 ↗</a><a :href="editUrl(item.slug)">编辑 →</a><button type="button" :disabled="managing" @click="managePost(item)">{{ item.hidden ? '恢复公开' : '隐藏' }}</button><button class="delete-action" type="button" :disabled="managing" @click="managePost(item, true)">删除</button></div>
           </article>
         </div>
         <div v-else class="empty-state"><span class="empty-mark">✳</span><p>还没有文章</p><a :href="`${basePath}/admin/posts/new`">写下第一篇文章 →</a></div>

@@ -440,3 +440,9 @@ body:has(.writing-shell) { overflow: hidden; }
   .writing-shell .writing-pane .markdown-editor, .writing-shell .writing-pane .markdown-preview { padding: 12px; }
   .writing-shell .markdown-toolbar { padding: 7px 10px; }
 }
+
+.manage-actions { flex-wrap: wrap; }
+.manage-actions button { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.manage-actions button:disabled { opacity: .5; cursor: wait; }
+.manage-actions .delete-action { color: #a33030; }
+.visibility-label { display: inline-block; font-size: 12px; font-weight: 400; color: #66724c; }
